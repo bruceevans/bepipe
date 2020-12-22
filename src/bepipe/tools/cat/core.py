@@ -37,10 +37,7 @@ class CAT(QtCore.QObject):
         self._ui.openProjectAction.triggered.connect(self._openProject)
 
     def _createAsset(self):
-        # create the folder structure based on selection
         elements = self._getElements()
-        print(elements)
-        # self._readJson()
         self._createAssetDirectories(elements)
 
         # TODO add to project json
@@ -64,6 +61,8 @@ class CAT(QtCore.QObject):
                     except FileNotFoundError:
                         leftovers.append(newFolder)
 
+        # TODO this needs work
+
         for leftover in leftovers:
             try:
                 os.mkdir(leftover)
@@ -83,11 +82,15 @@ class CAT(QtCore.QObject):
             return
 
         self.projectDirectory = projectDirectory
-        print(self.projectDirectory)
+
         projectName = os.path.split(projectDirectory)[1]
         projectFile = projectDirectory + "/" + projectName + ".json"
-        self._writeProjectFile(projectFile, {})  # No data yet
+
+        path = { "PROJECTPATH" : self.projectDirectory }
+
+        self._writeProjectFile(projectFile, path)  # No data yet
         self._ui.projectLineEdit.setText(projectName)
+
         return projectName
 
     def _openProject(self):
