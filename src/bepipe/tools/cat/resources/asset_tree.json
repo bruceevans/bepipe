@@ -1,0 +1,135 @@
+ [
+  {
+    "Type": "Directory",
+    "Path": ""
+  },
+  {
+    "Type": "Directory",
+    "Path": "anim"
+  },
+  {
+    "Type": "Directory",
+    "Path": "anim/anim-name"
+  },
+  {
+    "Type": "File",
+    "Path": "anim/anim-name/readme.txt",
+    "Extension": ".txt"
+  },
+  {
+    "Type": "Directory",
+    "Path": "anim/anim-name/_version"
+  },
+  {
+    "Type": "Directory",
+    "Path": "anim/anim-name/_version/official"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/psd"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/sbd"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/sbd/map-exports"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/sbp"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/sbp/bake"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/sbp/map-exports"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/tga"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/_version"
+  },
+  {
+    "Type": "Directory",
+    "Path": "maps/_version/official"
+  },
+  {
+    "Type": "Directory",
+    "Path": "mesh"
+  },
+  {
+    "Type": "Directory",
+    "Path": "mesh/_version"
+  },
+  {
+    "Type": "Directory",
+    "Path": "mesh/_version/official"
+  },
+  {
+    "Type": "Directory",
+    "Path": "output"
+  },
+  {
+    "Type": "Directory",
+    "Path": "output/turntable"
+  },
+  {
+    "Type": "Directory",
+    "Path": "output/turntable/_version"
+  },
+  {
+    "Type": "Directory",
+    "Path": "output/turntable/_version/official"
+  },
+  {
+    "Type": "Directory",
+    "Path": "ref"
+  },
+  {
+    "Type": "Directory",
+    "Path": "ref/movies"
+  },
+  {
+    "Type": "Directory",
+    "Path": "rig"
+  },
+  {
+    "Type": "Directory",
+    "Path": "rig/_version"
+  },
+  {
+    "Type": "Directory",
+    "Path": "rig/_version/official"
+  },
+  {
+    "Type": "Directory",
+    "Path": "sculpt"
+  },
+  {
+    "Type": "Directory",
+    "Path": "sculpt/basemesh"
+  },
+  {
+    "Type": "Directory",
+    "Path": "sculpt/zb"
+  },
+  {
+    "Type": "Directory",
+    "Path": "sculpt/_version"
+  },
+  {
+    "Type": "Directory",
+    "Path": "sculpt/_version/official"
+  }
+]

@@ -1,10 +1,13 @@
 
 import os
 import json
+import pprint as pp
+
 from . import ui
+
 from PySide2 import QtCore, QtGui, QtWidgets
 
-import pprint as pp
+import bepipe.core.utility.utils as utils
 
 _ELEMENTS = ["anim", "maps", "mesh", "output", "ref", "rig", "sculpt"]
 
@@ -20,6 +23,8 @@ class CAT(QtCore.QObject):
 
         self._worker = None
         self._thread = None
+
+        self.projectDirectory = None
 
         self._ui = ui.CATWindow()
         self._connectWidgets()
@@ -43,15 +48,27 @@ class CAT(QtCore.QObject):
     def _createAssetDirectories(self, elements):
         templateDirs = self._getTemplateDirectories()
 
-        # comprehension to make a new list
-        # resultDirs = [ i for j in elements if template[] ]
+        leftovers = []
+
+        assetPath = os.path.join(self.projectDirectory, self._ui.assetLineEdit.text())
+        os.mkdir(assetPath)
 
         for element in elements:  # element is an index
             for directory in templateDirs:
                 if directory.get("Path").find(_ELEMENTS[element]) != -1:
-                    # TODO join with project directory
-                    # project + asset + directory
-                    print(directory)
+                    relPath = directory.get("Path")
+                    newFolder = os.path.join(assetPath, relPath)
+                    newFolder = utils.toLinuxPath(newFolder)
+                    try:
+                        os.mkdir(newFolder)
+                    except FileNotFoundError:
+                        leftovers.append(newFolder)
+
+        for leftover in leftovers:
+            try:
+                os.mkdir(leftover)
+            except FileExistsError:
+                continue
 
     def _createProject(self):
         """ Create a standard project (directory file and json),
@@ -65,6 +82,8 @@ class CAT(QtCore.QObject):
         if not projectDirectory:
             return
 
+        self.projectDirectory = projectDirectory
+        print(self.projectDirectory)
         projectName = os.path.split(projectDirectory)[1]
         projectFile = projectDirectory + "/" + projectName + ".json"
         self._writeProjectFile(projectFile, {})  # No data yet
@@ -83,10 +102,12 @@ class CAT(QtCore.QObject):
             "JSON File *.json")[0]
         if not project:
             return
+        self.projectDirectory = os.path.dirname(project)
+        print(self.projectDirectory)
         projectName = os.path.splitext(os.path.basename(project))[0]
         self._ui.projectLineEdit.setText(projectName)
 
-    def _getAssetName(self):
+    def _getAsset(self):
         return self._ui.assetLineEdit.text()
 
     def _getElements(self):
