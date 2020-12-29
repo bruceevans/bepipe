@@ -25,6 +25,7 @@ class CAT(QtCore.QObject):
         self._thread = None
 
         self.projectDirectory = None
+        self.projectFile = None
 
         self._ui = ui.CATWindow()
         self._connectWidgets()
@@ -36,11 +37,37 @@ class CAT(QtCore.QObject):
         self._ui.newProjectAction.triggered.connect(self._createProject)
         self._ui.openProjectAction.triggered.connect(self._openProject)
 
+    def _addElementToProject(self, project, asset):
+        """ Write an asset to the project file
+        """
+
     def _createAsset(self):
-        elements = self._getElements()
-        self._createAssetDirectories(elements)
+        elements = []
+        for i in self._getElements():
+            elements.append(self._ui.elements[i].text())
+        asset = self._createAssetDirectories(self._getElements())
+
+        assetName = self._ui.assetLineEdit.text()
+        # main project path joined to asset name folder
+        assetPath = utils.toLinuxPath(os.path.join(self.projectDirectory, assetName))
+
+        assetDict = {
+            "NAME": assetName,
+            "ELEMENTS": elements,
+            "PATH": assetPath
+            }
 
         # TODO add to project json
+        self._writeAssetToFile(self.projectFile, assetDict)
+
+        # TODO confirm creation or not
+        if asset:
+            self._ui.catMessageBox("Asset created!", self._cleanUp) # TODO pass clean up function
+        # TODO self._cleanUp
+
+    def _confirmAssetCreation(self):
+        """ Return true if asset was made, else false
+        """
 
     def _createAssetDirectories(self, elements):
         templateDirs = self._getTemplateDirectories()
@@ -67,12 +94,21 @@ class CAT(QtCore.QObject):
             try:
                 os.mkdir(leftover)
             except FileExistsError:
-                continue
+                continue 
+
+        return True
+
+    def _cleanUp(self):
+        """ Reset the app
+        """
+        print("Cleaning up!")
 
     def _createProject(self):
         """ Create a standard project (directory file and json),
             can be an existing directory or a new one via fild dialog
         """
+
+        # TODO check for a project that already exists
 
         qfd = QtWidgets.QFileDialog()        
         projectDirectory = QtWidgets.QFileDialog.getExistingDirectory(
@@ -84,14 +120,29 @@ class CAT(QtCore.QObject):
         self.projectDirectory = projectDirectory
 
         projectName = os.path.split(projectDirectory)[1]
-        projectFile = projectDirectory + "/" + projectName + ".json"
+        self.projectFile = projectDirectory + "/" + projectName + ".json"
 
-        path = { "PROJECTPATH" : self.projectDirectory }
+        # format project dictionary
+        projectDict = [
+            { "PROJECT": {
+                "PATH": self.projectDirectory
+                # TODO project type
+            } },
+            {
+                "ASSETS": []
+            }
+        ]
 
-        self._writeProjectFile(projectFile, path)  # No data yet
+        self._writeProjectFile(self.projectFile, projectDict)
         self._ui.projectLineEdit.setText(projectName)
-
         return projectName
+
+    def _deleteAsset(self):
+        """ Delete existing asset
+        """
+
+        # TODO remove directory
+        # TODO remove JSON entry
 
     def _openProject(self):
         """ Open an existing json project
@@ -105,8 +156,8 @@ class CAT(QtCore.QObject):
             "JSON File *.json")[0]
         if not project:
             return
+        self.projectFile = project
         self.projectDirectory = os.path.dirname(project)
-        print(self.projectDirectory)
         projectName = os.path.splitext(os.path.basename(project))[0]
         self._ui.projectLineEdit.setText(projectName)
 
@@ -153,6 +204,18 @@ class CAT(QtCore.QObject):
             self._ui.btnCreate.setEnabled(True)
             self._ui.btnCreate.setStyleSheet(ui.WHITE_TEXT)
             return asset
+
+    def _writeAssetToFile(self, projectFile, asset):
+
+        data = None
+        with open(projectFile, "r") as o:
+            data = json.load(o)
+        # get assetList and append a new one
+        assetList = data[1].get("ASSETS")
+        assetList.append(asset)
+        jsonObject = json.dumps(data, indent=4)
+        with open(projectFile, "w") as w:
+            w.write(jsonObject)
 
     def _writeProjectFile(self, projectName, data):
         """ Create a new json file to store project info
