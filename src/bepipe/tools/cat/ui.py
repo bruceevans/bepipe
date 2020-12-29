@@ -124,21 +124,34 @@ class CATWindow(QtWidgets.QMainWindow):
     def _connecteSignals(self):
         pass
 
-    def catMessageBox(self, msg, func = None):
+    def catMessageBox(self, msg, func = None, cancel = False):
+        """ Base message box to display text and confirm button,
+            follow up with an optional function call
 
-        """ Base message box to display text and confirm button
+            args:
+            
+            msg (str) : body of the message box
+            func (function) : optional function to call after running
+            cancel (bool) : use a cancel button or not
         """
 
         msgBox = QtWidgets.QMessageBox()
         # TODO Icon
         # TODO title
         msgBox.setText(msg)
-        msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+
+        if cancel:
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        else:
+            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
 
         result = msgBox.exec_()
         if result == QtWidgets.QMessageBox.Ok:
             if func:
                 func()  # TODO may need to pass args as well
             else:
-                return
+                return True
+        else:
+            # Hit cancel, don't run the func
+            return False
 

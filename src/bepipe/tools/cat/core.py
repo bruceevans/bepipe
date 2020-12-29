@@ -3,13 +3,12 @@ import os
 import json
 import pprint as pp
 
-from . import ui
-
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from . import ui
 import bepipe.core.utility.utils as utils
 
-_ELEMENTS = ["anim", "maps", "mesh", "output", "ref", "rig", "sculpt"]
+_ELEMENTS = ["anim", "lighting", "maps", "mesh", "output", "ref", "rig", "sculpt"]
 
 
 class CAT(QtCore.QObject):
@@ -37,17 +36,32 @@ class CAT(QtCore.QObject):
         self._ui.newProjectAction.triggered.connect(self._createProject)
         self._ui.openProjectAction.triggered.connect(self._openProject)
 
-    def _addElementToProject(self, project, asset):
-        """ Write an asset to the project file
+    def _cleanUp(self):
+        """ Reset the app
         """
+        # clear text edit
+        self._ui.assetLineEdit.setText("")
+        # enable all elements
+        for element in self._ui.elements:
+            element.setChecked(True)
 
     def _createAsset(self):
+        """ Create a new asset within a project
+        """
+
         elements = []
+
         for i in self._getElements():
             elements.append(self._ui.elements[i].text())
-        asset = self._createAssetDirectories(self._getElements())
 
         assetName = self._ui.assetLineEdit.text()
+
+        if os.path.exists(os.path.join(self.projectDirectory, assetName)):
+            self._ui.catMessageBox("Asset already exists!", self._cleanUp, cancel=True)
+            return
+
+        asset = self._createAssetDirectories(self._getElements())
+
         # main project path joined to asset name folder
         assetPath = utils.toLinuxPath(os.path.join(self.projectDirectory, assetName))
 
@@ -57,17 +71,10 @@ class CAT(QtCore.QObject):
             "PATH": assetPath
             }
 
-        # TODO add to project json
         self._writeAssetToFile(self.projectFile, assetDict)
 
-        # TODO confirm creation or not
         if asset:
-            self._ui.catMessageBox("Asset created!", self._cleanUp) # TODO pass clean up function
-        # TODO self._cleanUp
-
-    def _confirmAssetCreation(self):
-        """ Return true if asset was made, else false
-        """
+            self._ui.catMessageBox("Asset created!", self._cleanUp)
 
     def _createAssetDirectories(self, elements):
         templateDirs = self._getTemplateDirectories()
@@ -98,17 +105,10 @@ class CAT(QtCore.QObject):
 
         return True
 
-    def _cleanUp(self):
-        """ Reset the app
-        """
-        print("Cleaning up!")
-
     def _createProject(self):
         """ Create a standard project (directory file and json),
             can be an existing directory or a new one via fild dialog
         """
-
-        # TODO check for a project that already exists
 
         qfd = QtWidgets.QFileDialog()        
         projectDirectory = QtWidgets.QFileDialog.getExistingDirectory(
@@ -122,7 +122,12 @@ class CAT(QtCore.QObject):
         projectName = os.path.split(projectDirectory)[1]
         self.projectFile = projectDirectory + "/" + projectName + ".json"
 
-        # format project dictionary
+        if os.path.exists(self.projectFile):
+            # File already exists, no need for a new one
+            self._ui.catMessageBox("Project already exists!")
+            return
+
+        # format project file contents
         projectDict = [
             { "PROJECT": {
                 "PATH": self.projectDirectory
@@ -137,29 +142,17 @@ class CAT(QtCore.QObject):
         self._ui.projectLineEdit.setText(projectName)
         return projectName
 
-    def _deleteAsset(self):
+    def _deleteAsset(self, asset):
         """ Delete existing asset
         """
 
-        # TODO remove directory
-        # TODO remove JSON entry
-
-    def _openProject(self):
-        """ Open an existing json project
-        """
-
-        qfd = QtWidgets.QFileDialog()
-        project = QtWidgets.QFileDialog.getOpenFileName(
-            qfd,
-            ("Select a project (JSON)"),
-            os.environ['USERPROFILE'],
-            "JSON File *.json")[0]
-        if not project:
+        if not self._ui.catMessageBox("Do you really want to delete {}?" % asset, cancel=True):
             return
-        self.projectFile = project
-        self.projectDirectory = os.path.dirname(project)
-        projectName = os.path.splitext(os.path.basename(project))[0]
-        self._ui.projectLineEdit.setText(projectName)
+
+        # TODO remove directory and JSON Entry
+        fileInfo = self._getProjectFileContents(self.projectFile)
+        assets = fileInfo.get("ASSETS")
+        print(assets)
 
     def _getAsset(self):
         return self._ui.assetLineEdit.text()
@@ -173,6 +166,15 @@ class CAT(QtCore.QObject):
             if element.isChecked():
                 elements.append(i)
         return elements
+
+    def _getProjectFileContents(self, projectFile):
+        """ Quickly grab the contents of the JSON project file
+        """
+
+        with open(projectFile, 'r') as p:
+            projectData = json.load(p)
+
+        return projectData
 
     def _getProjectPath(self):
         return self._ui.projectLineEdit.text()
@@ -190,8 +192,26 @@ class CAT(QtCore.QObject):
         return templateDirectories
 
     def _help(self):
-        # link to docs or something
-        pass
+        """Link to online documentation
+        """
+        # TODO
+
+    def _openProject(self):
+        """ Open an existing json project
+        """
+
+        qfd = QtWidgets.QFileDialog()
+        project = QtWidgets.QFileDialog.getOpenFileName(
+            qfd,
+            ("Select a project (JSON)"),
+            os.environ['USERPROFILE'],
+            "JSON File *.json")[0]
+        if not project:
+            return
+        self.projectFile = project
+        self.projectDirectory = os.path.dirname(project)
+        projectName = os.path.splitext(os.path.basename(project))[0]
+        self._ui.projectLineEdit.setText(projectName)
 
     def _updateAsset(self):
         asset = self._getAsset()
@@ -222,7 +242,10 @@ class CAT(QtCore.QObject):
         """
 
         jsonObject = json.dumps(data, indent=4)
-
         with open(projectName, "w") as o:
             o.write(jsonObject)
+
+# TODO select existing asset (combo box)
+# TODO right click menu (Browse disk path, delete)
+# TODO asset type (prop, environment, char)
         
