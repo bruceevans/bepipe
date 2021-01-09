@@ -31,7 +31,7 @@ class CAT(QtCore.QObject):
         self._ui.show()
 
     def _connectWidgets(self):
-        self._ui.assetLineEdit.textChanged.connect(self._updateAsset)
+        self._ui.newAssetLineEdit.textChanged.connect(self._updateAsset)
         self._ui.btnCreate.clicked.connect(self._createAsset)
         self._ui.newProjectAction.triggered.connect(self._createProject)
         self._ui.openProjectAction.triggered.connect(self._openProject)
@@ -40,7 +40,7 @@ class CAT(QtCore.QObject):
         """ Reset the app
         """
         # clear text edit
-        self._ui.assetLineEdit.setText("")
+        self._ui.newAssetLineEdit.setText("")
         # enable all elements
         for element in self._ui.elements:
             element.setChecked(True)
@@ -54,7 +54,7 @@ class CAT(QtCore.QObject):
         for i in self._getElements():
             elements.append(self._ui.elements[i].text())
 
-        assetName = self._ui.assetLineEdit.text()
+        assetName = self._ui.newAssetLineEdit.text()
 
         if os.path.exists(os.path.join(self.projectDirectory, assetName)):
             self._ui.catMessageBox("Asset already exists!", self._cleanUp, cancel=True)
@@ -77,11 +77,14 @@ class CAT(QtCore.QObject):
             self._ui.catMessageBox("Asset created!", self._cleanUp)
 
     def _createAssetDirectories(self, elements):
+        """ Create folders for each element
+
+        Args:
+            elements (str list): elements from UI checkboxes
+        """
+
         templateDirs = self._getTemplateDirectories()
-
-        leftovers = []
-
-        assetPath = os.path.join(self.projectDirectory, self._ui.assetLineEdit.text())
+        assetPath = os.path.join(self.projectDirectory, self._ui.newAssetLineEdit.text())
         os.mkdir(assetPath)
 
         for element in elements:  # element is an index
@@ -90,18 +93,7 @@ class CAT(QtCore.QObject):
                     relPath = directory.get("Path")
                     newFolder = os.path.join(assetPath, relPath)
                     newFolder = utils.toLinuxPath(newFolder)
-                    try:
-                        os.mkdir(newFolder)
-                    except FileNotFoundError:
-                        leftovers.append(newFolder)
-
-        # TODO this needs work
-
-        for leftover in leftovers:
-            try:
-                os.mkdir(leftover)
-            except FileExistsError:
-                continue 
+                    os.makedirs(newFolder)  # TODO exception?
 
         return True
 
@@ -109,6 +101,8 @@ class CAT(QtCore.QObject):
         """ Create a standard project (directory file and json),
             can be an existing directory or a new one via fild dialog
         """
+
+        # TODO deliberately name the json file
 
         qfd = QtWidgets.QFileDialog()        
         projectDirectory = QtWidgets.QFileDialog.getExistingDirectory(
@@ -155,7 +149,7 @@ class CAT(QtCore.QObject):
         print(assets)
 
     def _getAsset(self):
-        return self._ui.assetLineEdit.text()
+        return self._ui.newAssetLineEdit.text()
 
     def _getElements(self):
         """ Return a list of element to create as an index of ints
@@ -248,4 +242,3 @@ class CAT(QtCore.QObject):
 # TODO select existing asset (combo box)
 # TODO right click menu (Browse disk path, delete)
 # TODO asset type (prop, environment, char)
-        

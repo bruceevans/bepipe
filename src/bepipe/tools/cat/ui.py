@@ -1,5 +1,6 @@
 
 import sys
+import enum
 from PySide2 import QtWidgets, QtCore, QtGui
 
 
@@ -55,11 +56,39 @@ class CATWindow(QtWidgets.QMainWindow):
         projectTitleLayout.addWidget(projectLabel)
         projectTitleLayout.addWidget(self.projectLineEdit)
 
-        assetLabel = QtWidgets.QLabel("Asset Name: ")
-        self.assetLineEdit = QtWidgets.QLineEdit()
-        assetLayout = QtWidgets.QHBoxLayout()
-        assetLayout.addWidget(assetLabel)
-        assetLayout.addWidget(self.assetLineEdit)
+        newAssetLabel = QtWidgets.QLabel("New Asset: ")
+        self.newAssetLineEdit = QtWidgets.QLineEdit()
+        newAssetLayout = QtWidgets.QHBoxLayout()
+        newAssetLayout.addWidget(newAssetLabel)
+        newAssetLayout.addWidget(self.newAssetLineEdit)
+
+        # Combobox to select exising assets and modify
+        self.existingAssetLabel = QtWidgets.QLabel("Existing Asset:")
+        self.existingAssetCombo = QtWidgets.QComboBox()
+
+        existingAssetLayout = QtWidgets.QHBoxLayout()
+        existingAssetLayout.addWidget(self.existingAssetLabel)
+        existingAssetLayout.addWidget(self.existingAssetCombo)
+
+        # TODO add a function for this
+        self.existingAssetLabel.hide()
+        self.existingAssetCombo.hide()
+
+        # TODO Updating existing asset
+        '''
+        What does it mean to update?
+        1. load info from existing asset (checkboxes)
+        2. update checkboxes (add or remove)
+        3. confirm
+
+        If there is text in the new asset lineedit,
+        ignor the combobox (switch modes)
+        '''
+
+        assetLayout = QtWidgets.QVBoxLayout()
+        assetLayout.addLayout(newAssetLayout)
+        assetLayout.addLayout(existingAssetLayout)
+
 
         elementGroup = QtWidgets.QGroupBox("Elements")
         elementLayout = QtWidgets.QVBoxLayout()
@@ -154,4 +183,12 @@ class CATWindow(QtWidgets.QMainWindow):
         else:
             # Hit cancel, don't run the func
             return False
+
+    def newAssetMode(self):
+        """ Disables asset combos if there are values in the lineedit
+        """
+
+    def existingAssetMode(self):
+        """ If nothing is in the lineedit and an asset exists
+        """
 
