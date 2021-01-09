@@ -3,7 +3,7 @@
 
 import os
 import sys
-sys.path.append("D:\\Projects\\GitHub\\bepipe\\src\\")
+sys.path.append("D:\\Projects\\dev\\packages\\bepipe\\src\\")
 
 from PySide2 import QtWidgets
 import bepipe.core.qt.themes as themes

@@ -161,6 +161,25 @@ class CAT(QtCore.QObject):
                 elements.append(i)
         return elements
 
+    def _getExistingAssets(self, projectFile):
+        """ Get a list of all assets from the project file
+
+            args:
+                projectFile (str) path to json project file
+
+            returns:
+                str list: asset names
+        """
+        assetList = []
+        projectData = self._getProjectFileContents(projectFile)
+
+        assets = projectData[1].get("ASSETS")
+
+        for asset in assets:
+            assetList.append(asset.get("NAME"))
+
+        return assetList
+
     def _getProjectFileContents(self, projectFile):
         """ Quickly grab the contents of the JSON project file
         """
@@ -202,10 +221,20 @@ class CAT(QtCore.QObject):
             "JSON File *.json")[0]
         if not project:
             return
+
         self.projectFile = project
         self.projectDirectory = os.path.dirname(project)
         projectName = os.path.splitext(os.path.basename(project))[0]
         self._ui.projectLineEdit.setText(projectName)
+
+        assets = self._getExistingAssets(project)
+        self._ui.existingAssetCombo.addItems(assets)
+
+        # TODO make a function
+        self._ui.existingAssetLabel.show()
+        self._ui.existingAssetCombo.show()
+        
+        # TODO connect lineedit text to disable function
 
     def _updateAsset(self):
         asset = self._getAsset()
