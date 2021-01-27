@@ -9,14 +9,15 @@ _APPLICATION_PATH = utils.getApplicationPath(__file__)
 _DEFAULT_TAGS = ["Art", "Code", "Games", "Media", "Productivity", "Web"]
 
 
-class BeLauncherUI:
+class BeLauncherUI(QtCore.QObject):
     """ Tray icon and windows for Be Launcher
     """
 
-    _WRITE_JSON = QtCore.Signal(str)
+    _WRITE_JSON = QtCore.Signal(str, str)
 
 
     def __init__(self):
+        super(BeLauncherUI, self).__init__()
 
         # Blank inits
         self.trayIcon = None
@@ -24,7 +25,6 @@ class BeLauncherUI:
         self.prefsMenu = None
 
         # Add app vars
-        self.btnAccept = QtWidgets.QPushButton("Ok")
         self.newAppPath = None
         self.newTag = None
 
@@ -37,7 +37,6 @@ class BeLauncherUI:
     def _setupUI(self):
         """ Setup menus for options
         """
-
         ## Tray icon setup
         self.trayIcon = QtWidgets.QSystemTrayIcon()
         self.trayIcon.setIcon(self.icon)
@@ -93,6 +92,10 @@ class BeLauncherUI:
         """ Update the app menu
         """
 
+    def _emitJsonInfo(self):
+        self._WRITE_JSON.emit(self.newAppPath, self.newTag)
+        self.addAppMenu.close()
+
     ## -- Menus -- ##
 
     def _addApplicationMenu(self, appPath):
@@ -120,7 +123,7 @@ class BeLauncherUI:
         labelTag = QtWidgets.QLabel("Tag:")
         checkBoxTag = QtWidgets.QComboBox()
 
-        # TODO lineedit update and dropbox update via signal
+        # TODO lineedit update and dropbox update via local signal
 
         for tag in self.tags:
             checkBoxTag.addItem(tag)
@@ -138,9 +141,11 @@ class BeLauncherUI:
 
         btnLayout = QtWidgets.QHBoxLayout()
 
+        btnAccept = QtWidgets.QPushButton("Ok")  # instantiate here, add to layout later
+        btnAccept.clicked.connect(self._emitJsonInfo)
         btnCancel = QtWidgets.QPushButton("Cancel")
 
-        btnLayout.addWidget(self.btnAccept)
+        btnLayout.addWidget(btnAccept)
         btnLayout.addWidget(btnCancel)
 
         mainLayout.addLayout(layoutName)

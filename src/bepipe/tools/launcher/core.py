@@ -11,8 +11,6 @@ import psutil
 import subprocess
 import configparser
 import webbrowser
-import qdarkstyle
-import qdarkgraystyle
 
 sys.path.append("D:\\Projects\\dev\\packages\\bepipe\\src\\")
 
@@ -44,7 +42,7 @@ class BeLauncher(QtCore.QObject):
         """ Connect core to ui
         """
         self._ui.trayIcon.activated.connect(self._onTrayActivated)
-        self._ui.btnAccept.clicked.connect(self._writeAppsToJson)
+        self._ui._WRITE_JSON.connect(self._writeAppsToJson)
 
     def _addApplication(self, appPath):
         """ Shows the 'add application' window and
@@ -84,13 +82,11 @@ class BeLauncher(QtCore.QObject):
             launchMenu.move(launcherMenuGeometry.topLeft())
             launchMenu.show()
 
-    def _writeAppsToJson(self):
+    def _writeAppsToJson(self, path, tag):
         """ Save the app list to the resources json file
         """
-        print(self._ui.newAppPath)
-        print(self._ui.newTag)
-
-        self._ui.addAppMenu.close()
+        print(path)
+        print(tag)
 
         # check if tag exists, if not append it
 
