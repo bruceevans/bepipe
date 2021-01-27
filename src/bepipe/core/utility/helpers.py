@@ -10,9 +10,8 @@ def toWindowsPath(path):
 
 # def getPlatform():
 
-def getApplicationPath():
+def getApplicationPath(pyFile):
     if getattr(sys, 'frozen', False):
-        # TODO mac
         return os.path.dirname(sys.executable)
     elif __file__:
-        return os.path.dirname(__file__)
+        return os.path.dirname(pyFile)
