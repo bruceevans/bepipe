@@ -3,13 +3,15 @@ import os
 import json
 import pprint as pp
 
+from P4 import P4Exception
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from . import ui
-import bepipe.core.utility.utils as utils
+import bepipe.core.utility.helpers as utils
+import bepipe.core.utility.bepipeP4 as bepipeP4
 
 _ELEMENTS = ["anim", "lighting", "maps", "mesh", "output", "ref", "rig", "sculpt"]
-
+_NO_ASSET = "Select asset..."
 
 class CAT(QtCore.QObject):
     """ Main control
@@ -25,6 +27,8 @@ class CAT(QtCore.QObject):
 
         self.projectDirectory = None
         self.projectFile = None
+        self.mode = None
+        self.p4 = None
 
         self._ui = ui.CATWindow()
         self._connectWidgets()
@@ -35,13 +39,14 @@ class CAT(QtCore.QObject):
         self._ui.btnCreate.clicked.connect(self._createAsset)
         self._ui.newProjectAction.triggered.connect(self._createProject)
         self._ui.openProjectAction.triggered.connect(self._openProject)
+        self._ui.newAssetLineEdit.textChanged.connect(self.detectMode)
+        self._ui.close.connect(self.submitChangelist)
 
     def _cleanUp(self):
         """ Reset the app
         """
-        # clear text edit
+        self._refresh()
         self._ui.newAssetLineEdit.setText("")
-        # enable all elements
         for element in self._ui.elements:
             element.setChecked(True)
 
@@ -57,7 +62,7 @@ class CAT(QtCore.QObject):
         assetName = self._ui.newAssetLineEdit.text()
 
         if os.path.exists(os.path.join(self.projectDirectory, assetName)):
-            self._ui.catMessageBox("Asset already exists!", self._cleanUp, cancel=True)
+            self._ui.catMessageBox("Uh oh!", "Asset already exists!", self._cleanUp, cancelButton=True)
             return
 
         asset = self._createAssetDirectories(self._getElements())
@@ -74,7 +79,7 @@ class CAT(QtCore.QObject):
         self._writeAssetToFile(self.projectFile, assetDict)
 
         if asset:
-            self._ui.catMessageBox("Asset created!", self._cleanUp)
+            self._ui.catMessageBox("Asset Created", "Successfully created asset {}!".format(assetName), self._cleanUp)
 
     def _createAssetDirectories(self, elements):
         """ Create folders for each element
@@ -118,7 +123,7 @@ class CAT(QtCore.QObject):
 
         if os.path.exists(self.projectFile):
             # File already exists, no need for a new one
-            self._ui.catMessageBox("Project already exists!")
+            self._ui.catMessageBox("Uh oh!", "Project already exists!")
             return
 
         # format project file contents
@@ -140,7 +145,7 @@ class CAT(QtCore.QObject):
         """ Delete existing asset
         """
 
-        if not self._ui.catMessageBox("Do you really want to delete {}?" % asset, cancel=True):
+        if not self._ui.catMessageBox("Hold up!", "Do you really want to delete {}?" % asset, cancelButton=True):
             return
 
         # TODO remove directory and JSON Entry
@@ -214,6 +219,7 @@ class CAT(QtCore.QObject):
         """
 
         qfd = QtWidgets.QFileDialog()
+
         project = QtWidgets.QFileDialog.getOpenFileName(
             qfd,
             ("Select a project (JSON)"),
@@ -223,18 +229,34 @@ class CAT(QtCore.QObject):
             return
 
         self.projectFile = project
+
+        # Perforce stuff
+        if self._ui.usingP4.isChecked():
+            self.p4 = bepipeP4.createP4Instance(client='bevans') # TODO setting
+            # sync latest
+            print("syncing!")
+            try:
+                bepipeP4.syncFile(self.p4, self.projectFile)
+                bepipeP4.createNewChangelist(self.p4, "Adding assets to project json")
+            except P4Exception as e:
+                print(e)
+
         self.projectDirectory = os.path.dirname(project)
         projectName = os.path.splitext(os.path.basename(project))[0]
         self._ui.projectLineEdit.setText(projectName)
 
-        assets = self._getExistingAssets(project)
+        # TODO refresh method
+        self._refresh()
+
+        self._ui.mode = ui.Mode.ExistingAsset
+
+    def _refresh(self):
+        assets = self._getExistingAssets(self.projectFile)
+        self._ui.existingAssetCombo.clear()
+        self._ui.existingAssetCombo.addItem(_NO_ASSET)
         self._ui.existingAssetCombo.addItems(assets)
 
-        # TODO make a function
-        self._ui.existingAssetLabel.show()
-        self._ui.existingAssetCombo.show()
-        
-        # TODO connect lineedit text to disable function
+        # TODO init checkboxes
 
     def _updateAsset(self):
         asset = self._getAsset()
@@ -257,6 +279,7 @@ class CAT(QtCore.QObject):
         assetList = data[1].get("ASSETS")
         assetList.append(asset)
         jsonObject = json.dumps(data, indent=4)
+
         with open(projectFile, "w") as w:
             w.write(jsonObject)
 
@@ -268,6 +291,44 @@ class CAT(QtCore.QObject):
         with open(projectName, "w") as o:
             o.write(jsonObject)
 
-# TODO select existing asset (combo box)
-# TODO right click menu (Browse disk path, delete)
-# TODO asset type (prop, environment, char)
+    def submitChangelist(self):
+        # window with lineedit
+        print("in changelist")
+        if self._ui.usingP4.isChecked():
+            if self.p4:
+                # create description
+                print("submitting")
+                desc = "Added new assets to project file"
+                bepipeP4.submitChangelist(self.p4, self.projectFile, desc)
+
+
+    def detectMode(self):
+
+        asset = self._ui.newAssetLineEdit.text()
+        if len(asset) > 0:
+            self.newAssetMode()
+        else:
+            self.existingAssetMode()
+
+    def newAssetMode(self):
+        """ Disables asset combos if there are values in the lineedit
+        """
+        self._ui.existingAssetLabel.setDisabled(True)
+        self._ui.existingAssetCombo.setDisabled(True)
+        self._ui.existingAssetLabel.setStyleSheet(ui.GRAY_TEXT)
+        self._ui.existingAssetCombo.setStyleSheet(ui.GRAY_TEXT)
+        self._ui.btnCreate.setText("Create Asset")
+        self.mode = ui.Mode.NewAsset
+
+    def existingAssetMode(self):
+        """ If nothing is in the lineedit and an asset exists
+        """
+        self._ui.existingAssetLabel.setDisabled(False)
+        self._ui.existingAssetCombo.setDisabled(False)
+        self._ui.existingAssetLabel.setStyleSheet(ui.WHITE_TEXT)
+        self._ui.existingAssetCombo.setStyleSheet(ui.WHITE_TEXT)
+        self._ui.btnCreate.setText("Modify Asset")
+        self.mode = ui.Mode.ExistingAsset
+        # TODO populate check boxes
+
+    # TODO On close, if using perforce, prompt a changelog comment

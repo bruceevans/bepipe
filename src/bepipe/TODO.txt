@@ -1,0 +1,9 @@
+CAT:
+
+1. refresh after creation - OK
+2. load elements on existing asset
+3. p4 checkout options
+4. choose save name for project (base off of parent folder)
+5. bcat file format and icon?
+6. context menu (Browse disk path, delete)
+7. asset type (prop, environment, char)

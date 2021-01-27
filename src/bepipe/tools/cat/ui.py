@@ -3,17 +3,29 @@ import sys
 import enum
 from PySide2 import QtWidgets, QtCore, QtGui
 
+# TODO move some of this to Qt module
+# TODO think of some sort of setting system
 
 NO_PROJECT = "Open a project or create a new one."
 GRAY_TEXT = "color: rgb(150, 150, 150)"
 WHITE_TEXT = "color: rgb(255, 255, 255)"
 
+ICON = "D:\\Projects\\dev\\packages\\bepipe\\resources\\icon_cat.png"
+
+class Mode(enum.Enum):
+    NewAsset = 1
+    ExistingAsset = 2
+
 class CATWindow(QtWidgets.QMainWindow):
     """ Main window wrapper for CAT
     """
 
+    close = QtCore.Signal()
+
     def __init__(self):
         super(CATWindow, self).__init__()
+
+        self.icon = QtGui.QIcon(ICON)
 
         self.elements = []
 
@@ -38,9 +50,9 @@ class CATWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(self.openProjectAction)
 
         # prefs
-        self.projectMode = QtWidgets.QAction('Project Mode', self)
-        self.projectMode.setCheckable(True)
-        prefsMenu.addAction(self.projectMode)
+        self.usingP4 = QtWidgets.QAction('Use Perforce', self)
+        self.usingP4.setCheckable(True)
+        prefsMenu.addAction(self.usingP4)
 
         # help
         self.docs = QtWidgets.QAction('Read the Docs', self)
@@ -69,10 +81,6 @@ class CATWindow(QtWidgets.QMainWindow):
         existingAssetLayout = QtWidgets.QHBoxLayout()
         existingAssetLayout.addWidget(self.existingAssetLabel)
         existingAssetLayout.addWidget(self.existingAssetCombo)
-
-        # TODO add a function for this
-        self.existingAssetLabel.hide()
-        self.existingAssetCombo.hide()
 
         # TODO Updating existing asset
         '''
@@ -147,13 +155,14 @@ class CATWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(centralWidget)
 
         self.setWindowTitle("CAT by Be")
+        self.setWindowIcon(self.icon)
         self.setFixedWidth(400)
         self.show()
 
     def _connecteSignals(self):
         pass
 
-    def catMessageBox(self, msg, func = None, cancel = False):
+    def catMessageBox(self, title, msg, func = None, cancelButton = False):
         """ Base message box to display text and confirm button,
             follow up with an optional function call
 
@@ -165,11 +174,12 @@ class CATWindow(QtWidgets.QMainWindow):
         """
 
         msgBox = QtWidgets.QMessageBox()
-        # TODO Icon
-        # TODO title
+        # TODO icon
+        msgBox.setIcon(QtWidgets.QMessageBox.NoIcon)
+        msgBox.setWindowTitle(title)
         msgBox.setText(msg)
 
-        if cancel:
+        if cancelButton:
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
         else:
             msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
@@ -184,11 +194,23 @@ class CATWindow(QtWidgets.QMainWindow):
             # Hit cancel, don't run the func
             return False
 
-    def newAssetMode(self):
-        """ Disables asset combos if there are values in the lineedit
-        """
+    def closeEvent(self, event):
+        # connect close signal
+        self.close.emit()
+        event.accept()
 
-    def existingAssetMode(self):
-        """ If nothing is in the lineedit and an asset exists
         """
-
+        print("close event")
+        result = QtWidgets.QMessageBox.question(
+            self,
+            "Closing",
+            "Exit and submit changes?",
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        event.ignore()
+        if result == QtWidgets.QMessageBox.Yes:
+            print("closing and emitting")
+            self.close.emit()
+            event.accept()
+        else:
+            event.ignore()
+        """

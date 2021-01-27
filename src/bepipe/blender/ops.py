@@ -5,9 +5,9 @@ import bpy
 from bpy.props import StringProperty
 from bpy_extras.io_utils import ExportHelper
 
-from . tools import bep_utils
-from . tools import _version
-from . tools import _save
+from . import _version
+from . import _save
+from . import _utils
 
 _FILE_EXT = ".blend"
 
