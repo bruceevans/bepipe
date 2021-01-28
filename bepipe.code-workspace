@@ -1,7 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "src\\bepipe"
+			"path": "."
 		}
-	]
+	],
+	"settings": {}
 }

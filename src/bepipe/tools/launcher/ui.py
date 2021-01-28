@@ -1,7 +1,6 @@
 import os
 import sys
 import json
-import psutil
 import subprocess
 
 import bepipe.core.utility.helpers as utils

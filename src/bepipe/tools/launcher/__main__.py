@@ -4,7 +4,8 @@ import sys
 
 from PySide2 import QtWidgets
 
-modulePath = os.path.dirname(os.path.abspath(__file__)).split('bepipe\\tools')[0]
+modulePath = os.path.dirname(os.path.abspath(__file__)).split('bepipe/tools')[0]
+print("File path is {}".format(modulePath))
 sys.path.append(modulePath)
 
 import bepipe.core.qt.themes as themes

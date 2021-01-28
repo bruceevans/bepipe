@@ -6,7 +6,7 @@
 
 import os
 import json
-import psutil
+# import psutil
 import ctypes
 import subprocess
 import configparser
@@ -19,7 +19,7 @@ import bepipe.core.utility.extracticon as extracticon
 from ui import BeLauncherUI
 
 _APPLICATION_PATH = utils.getApplicationPath(__file__)
-_STORED_APPS = _APPLICATION_PATH + "\\resources\\apps.json"
+_STORED_APPS = _APPLICATION_PATH + "/resources/apps.json"
 
 
 class BeLauncher(QtCore.QObject):
@@ -206,6 +206,7 @@ class LauncherAction(QtWidgets.QAction):
     def launch(self):
         """ Launch application or run script
         """
+        """
         if self._exe:
             if self._exe not in (p.name() for p in psutil.process_iter()):
                 # TODO new thread
@@ -213,3 +214,5 @@ class LauncherAction(QtWidgets.QAction):
                 subprocess.Popen([self._path])
             else:
                 self._message.emit("Oops! {} is already running".format(self._exe))
+        """
+        print("Launching {}".format(self._name))
