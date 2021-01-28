@@ -183,16 +183,13 @@ class LauncherAction(QtWidgets.QAction):
 
         self.icon = ""
 
-        """
         self.icon = self.getIcon(_APPLICATION_PATH, self._name)
         if not os.path.exists(self.icon):
-            print("ICON PATH: {}".format(self.icon))
-            extracticon.getIcon(self._path, self.icon)
-        """
+            extracticon.getIcon(self._path, self._name, self.icon)
 
     @staticmethod
     def getIcon(path, iconName):
-        return "{}\\resources\\icons\\icon_{}.png".format(path, iconName)
+        return "{}/resources/icons/icon_{}.png".format(path, iconName)
 
     @staticmethod
     def getApplication(appPath):

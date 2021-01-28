@@ -5,7 +5,6 @@ import sys
 from PySide2 import QtWidgets
 
 modulePath = os.path.dirname(os.path.abspath(__file__)).split('bepipe/tools')[0]
-print(modulePath)
 sys.path.append(modulePath)
 
 from core import BeLauncher

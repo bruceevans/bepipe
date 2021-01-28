@@ -56,7 +56,7 @@ class BeLauncherUI(QtCore.QObject):
         # set width?
         # self.launchMenu.setFixedWidth(150)
 
-        '''
+        
         self.launchMenu.setStyleSheet(
         """
         QMenu {
@@ -68,7 +68,7 @@ class BeLauncherUI(QtCore.QObject):
         }
         """
         )
-        '''
+        
 
         # formatting leftovers
 
@@ -162,7 +162,6 @@ class BeLauncherUI(QtCore.QObject):
         lineName.textChanged[str].connect(self._setNameFromLineEdit)
         
         self.appName = os.path.splitext(os.path.split(appPath)[1])[0]
-        # self.newAppPath = appPath
 
         lineName.setText(self.appName)
         layoutName = QtWidgets.QHBoxLayout()
@@ -190,14 +189,10 @@ class BeLauncherUI(QtCore.QObject):
         layoutNewTag.addWidget(labelTag)
         layoutNewTag.addWidget(lineEditTag)
 
-        # launchAction = LauncherAction(appPath, self.newTag)
-        # launchAction.name = lineName.text()
         print("APP PATH IS {}".format(appPath))
         launcher = {
             "name": "",
             "directory": appPath,
-            # "exe": "",
-            # "icon": "",
             "tag": ""
         }
 
