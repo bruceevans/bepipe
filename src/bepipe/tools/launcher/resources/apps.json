@@ -1,7 +1,22 @@
 [
     {
+        "name": "Blender",
+        "directory": "/Applications/Blender.app",
+        "tag": "Art"
+    },
+    {
         "name": "GitHub Desktop",
         "directory": "/Applications/GitHub Desktop.app",
+        "tag": "Code"
+    },
+    {
+        "name": "Atom",
+        "directory": "/Applications/Atom.app",
+        "tag": "Code"
+    },
+    {
+        "name": "Visual Studio Code",
+        "directory": "/Applications/Visual Studio Code.app",
         "tag": "Code"
     },
     {
@@ -15,8 +30,18 @@
         "tag": "Productivity"
     },
     {
-        "name": "Blender",
-        "directory": "/Applications/Blender.app",
-        "tag": "Art"
+        "name": "Terminal",
+        "directory": "/Applications/Utilities/Terminal.app",
+        "tag": "Utilities"
+    },
+    {
+        "name": "Google Chrome",
+        "directory": "/Applications/Google Chrome.app",
+        "tag": "Web"
+    },
+    {
+        "name": "VLC",
+        "directory": "/Applications/VLC.app",
+        "tag": "Media"
     }
 ]

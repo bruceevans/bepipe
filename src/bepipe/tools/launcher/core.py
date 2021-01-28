@@ -6,7 +6,6 @@
 
 import os
 import json
-# import psutil
 import ctypes
 import subprocess
 import configparser
@@ -26,7 +25,6 @@ class BeLauncher(QtCore.QObject):
     """ Main launcher control
     """
 
-    _launch = QtCore.Signal(str) # contains the path to the app being launched
 
     def __init__(self):
         super(BeLauncher, self).__init__()
@@ -93,7 +91,6 @@ class BeLauncher(QtCore.QObject):
                     print("No tag for {}".format(app.get("name")))
 
         # Sort by name
-
         for i in range(len(tagLists)):
             tagLists[i] = sorted(tagLists[i], key=lambda x: x['name'])
 
