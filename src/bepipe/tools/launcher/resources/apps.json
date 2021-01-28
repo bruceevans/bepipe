@@ -1,5 +1,142 @@
 [
     {
-
+        "name": "Substance Designer",
+        "directory": "C:/Program Files/Allegorithmic/Substance Designer/Substance Designer.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "Substance Painter",
+        "directory": "C:/Program Files/Allegorithmic/Substance Painter/Substance Painter.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "Marmoset Toolbag",
+        "directory": "C:/Program Files/Marmoset/Toolbag 3/toolbag.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "PureRef",
+        "directory": "C:/Program Files/PureRef/PureRef.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "Houdini",
+        "directory": "C:/Program Files/Side Effects Software/Houdini 18.0.416/bin/houdinifx.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "ZBrush",
+        "directory": "C:/Program Files/Pixologic/ZBrush 2021/ZBrush.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "Blender",
+        "directory": "C:/Program Files/Blender Foundation/Blender 2.90/blender.exe",
+        "tag": "Art"
+    },
+    {
+        "name": "VS Code",
+        "directory": "C:/Program Files/Microsoft VS Code/Code.exe",
+        "tag": "Code"
+    },
+    {
+        "name": "Visual Studio",
+        "directory": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/devenv.exe",
+        "tag": "Code"
+    },
+    {
+        "name": "Atom",
+        "directory": "C:/Users/bruce/AppData/Local/atom/atom.exe",
+        "tag": "Code"
+    },
+    {
+        "name": "GitHub",
+        "directory": "C:/Users/bruce/AppData/Local/GitHubDesktop/GitHubDesktop.exe",
+        "tag": "Code"
+    },
+    {
+        "name": "P4V",
+        "directory": "C:/Program Files/Perforce/p4v.exe",
+        "tag": "Code"
+    },
+    {
+        "name": "ConEmu",
+        "directory": "C:/Program Files/ConEmu/ConEmu64.exe",
+        "tag": "Code"
+    },
+    {
+        "name": "Unreal Engine",
+        "directory": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/UnrealEngineLauncher.exe",
+        "tag": "Game Dev"
+    },
+    {
+        "name": "GOG Galaxy",
+        "directory": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
+        "tag": "Games"
+    },
+    {
+        "name": "Origin",
+        "directory": "C:/Program Files (x86)/Origin/Origin.exe",
+        "tag": "Games"
+    },
+    {
+        "name": "Steam",
+        "directory": "C:/Program Files (x86)/Steam/steam.exe",
+        "tag": "Games"
+    },
+    {
+        "name": "Uplay",
+        "directory": "C:/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/Uplay.exe",
+        "tag": "Games"
+    },
+    {
+        "name": "Battle.net",
+        "directory": "D:/Games/Diablo III/Diablo III Launcher.exe",
+        "tag": "Games"
+    },
+    {
+        "name": "VLC",
+        "directory": "C:/Program Files/VideoLAN/VLC/vlc.exe",
+        "tag": "Media"
+    },
+    {
+        "name": "Spotify",
+        "directory": "C:/Users/bruce/AppData/Roaming/Spotify/Spotify.exe",
+        "tag": "Media"
+    },
+    {
+        "name": "Tixati",
+        "directory": "C:/Program Files/tixati/tixati.exe",
+        "tag": "Utilities"
+    },
+    {
+        "name": "VPN Unlimited",
+        "directory": "C:/Program Files (x86)/VPN Unlimited/vpn-unlimited.exe",
+        "tag": "Utilities"
+    },
+    {
+        "name": "Synology Assistant",
+        "directory": "C:/Program Files (x86)/Synology/Assistant/DSAssistant.exe",
+        "tag": "Utilities"
+    },
+    {
+        "name": "Twine",
+        "directory": "C:/Users/bruce/AppData/Local/Programs/Twine/Twine.exe",
+        "tag": "Writing"
+    },
+    {
+        "name": "Celtx",
+        "directory": "C:/Program Files (x86)/Celtx/celtx.exe",
+        "tag": "Writing"
+    },
+    {
+        "name": "Chrome",
+        "directory": "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+        "tag": "zWeb"
+    },
+    {
+        "name": "Hammer",
+        "directory": "D:/Games/steamapps/common/Counter-Strike Global Offensive/bin/hammer.exe",
+        "tag": "Game Dev"
     }
 ]

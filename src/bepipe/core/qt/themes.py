@@ -13,7 +13,7 @@ def setDark():
     dark_palette = QPalette()
     dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
     dark_palette.setColor(QPalette.WindowText, Qt.white)
-    dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+    dark_palette.setColor(QPalette.Base, QColor(40, 40, 40))
     dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
     dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
     dark_palette.setColor(QPalette.ToolTipText, Qt.white)
