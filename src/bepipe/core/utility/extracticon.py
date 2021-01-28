@@ -1,20 +1,16 @@
-import sys
 
-if sys.platform == 'win32':
+from PIL import Image
+import bepipe.core.utility.helpers as utils
+
+_PLATFORM = utils.getPlatform()
+
+if _PLATFORM == 'WINDOWS':
     import win32ui
     import win32gui
     import win32api
     import win32con
-else:
-    print("need mac solution")
 
-from PIL import Image
-
-_WINDOWS = (sys.platform == 'win32')
-
-def getIcon(appPath, iconName):
-    if _WINDOWS:
-        print("APPLICATION PATH {}".format(appPath))
+    def getIcon(appPath, iconName):
 
         ico_x = win32api.GetSystemMetrics(win32con.SM_CXICON)
         ico_y = win32api.GetSystemMetrics(win32con.SM_CYICON)
@@ -39,6 +35,7 @@ def getIcon(appPath, iconName):
             'BGRA', 0, 1
         )
         img.save(iconName)
-    else:
-        # TODO
-        print("NEED A MAC/LINUX SOLUTION")
+
+elif _PLATFORM == 'OSX':
+    print("NEED MAC SOLUTION")
+    print(_PLATFORM)

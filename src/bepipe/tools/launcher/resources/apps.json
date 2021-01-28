@@ -1,3 +1,7 @@
 [
-    
+    {
+        "name": "Blender",
+        "directory": "/Applications/Blender.app",
+        "tag": "Art"
+    }
 ]

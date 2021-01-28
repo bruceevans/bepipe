@@ -62,9 +62,8 @@ class BeLauncher(QtCore.QObject):
         """ Read settings from JSON or Python?
         """
 
-    def _openExplorerWindow(self):
-        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
-        subprocess.Popen('explorer ' + desktop)
+    def _openFolder(self):
+        subprocess.Popen(["open", '/Users/'])
 
     def _refreshView(self):
 
@@ -111,20 +110,35 @@ class BeLauncher(QtCore.QObject):
             if spacers[i] == -1:
                 self._ui.launchMenu.addSeparator()
             else:
-                # TODO add to the ui menu
                 action = self._ui.launchMenu.addAction(spacers[i].name)
                 action.setIcon(QtGui.QIcon(
                     spacers[i].icon
                 ))
                 action.triggered.connect(spacers[i].launch)
 
-        # TODO add batch files
+        # TODO add batch/shell files
 
         # Add the folder button
         self._ui.launchMenu.addSeparator()
         folderAction = self._ui.launchMenu.addAction("Explorer Window")
-        folderAction.triggered.connect(self._openExplorerWindow)
-        folderAction.setIcon(QtGui.QIcon(_APPLICATION_PATH + "\\resources\\icons\\icon_folder.png"))
+        folderAction.triggered.connect(self._openFolder)
+        folderAction.setIcon(QtGui.QIcon(_APPLICATION_PATH + "/resources/icons/icon_folder.png"))
+
+        addApplicationAction = self._ui.launchMenu.addAction("Add Application")
+        addApplicationAction.setIcon(QtGui.QIcon("{}/resources/icons/icon_add.png".format(_APPLICATION_PATH)))
+        addApplicationAction.triggered.connect(self._ui.chooseApplication)
+
+        settingsAction = self._ui.launchMenu.addAction("Settings")
+        settingsAction.setIcon(QtGui.QIcon("{}/resources/icons/icon_settings.png".format(_APPLICATION_PATH)))
+        # TODO connect
+
+        aboutAction = self._ui.launchMenu.addAction("About")
+        aboutAction.setIcon(QtGui.QIcon("{}/resources/icons/icon_info.png".format(_APPLICATION_PATH)))
+        # TODO connect
+
+        closeAction = self._ui.launchMenu.addAction("Close Launcher")
+        closeAction.setIcon(QtGui.QIcon("{}/resources/icons/icon_close.png".format(_APPLICATION_PATH)))
+        closeAction.triggered.connect(self._ui.closeApp)
 
     def _writeAppToJson(self, launcher):
         """ Save the app list to the resources json file
@@ -166,10 +180,15 @@ class LauncherAction(QtWidgets.QAction):
             self._name = self._exe.replace(".exe", "")
 
         self._tag = tag
+
+        self.icon = ""
+
+        """
         self.icon = self.getIcon(_APPLICATION_PATH, self._name)
         if not os.path.exists(self.icon):
             print("ICON PATH: {}".format(self.icon))
             extracticon.getIcon(self._path, self.icon)
+        """
 
     @staticmethod
     def getIcon(path, iconName):
@@ -206,13 +225,16 @@ class LauncherAction(QtWidgets.QAction):
     def launch(self):
         """ Launch application or run script
         """
-        """
+
         if self._exe:
+            subprocess.Popen(["/usr/bin/open", "-W", "-n", "-a", self._path])
+            """
             if self._exe not in (p.name() for p in psutil.process_iter()):
                 # TODO new thread
                 # subprocess.run(self._path)
                 subprocess.Popen([self._path])
             else:
                 self._message.emit("Oops! {} is already running".format(self._exe))
-        """
+            """
+
         print("Launching {}".format(self._name))

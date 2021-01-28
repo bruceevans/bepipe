@@ -4,7 +4,6 @@ import json
 import subprocess
 
 import bepipe.core.utility.helpers as utils
-import bepipe.core.utility.extracticon as extracticon
 from PySide2 import QtCore, QtGui, QtWidgets
 
 _APPLICATION_PATH = utils.getApplicationPath(__file__)
@@ -24,6 +23,7 @@ class BeLauncherUI(QtCore.QObject):
 
         # Blank inits
         self.trayIcon = None
+        self.launchMenu = None
         self.addAppMenu = None
         self.prefsMenu = None
 
@@ -32,7 +32,7 @@ class BeLauncherUI(QtCore.QObject):
         self.newAppPath = None
         self.newTag = None
 
-        self.icon = QtGui.QIcon("{}\\resources\\icons\\launcher_icon.png".format(_APPLICATION_PATH))
+        self.icon = QtGui.QIcon("{}/resources/icons/launcher_icon.png".format(_APPLICATION_PATH))
         self.tags = _DEFAULT_TAGS
 
         self._setupUI()
@@ -44,13 +44,17 @@ class BeLauncherUI(QtCore.QObject):
         ## Tray icon setup
         self.trayIcon = QtWidgets.QSystemTrayIcon()
         self.trayIcon.setIcon(self.icon)
-        self.trayIcon.setContextMenu(self.preferencesContextMenu())
+
+        # TODO Move to the bottom of the launchMenu
+        # self.trayIcon.setContextMenu(self.preferencesContextMenu())
+        
+        self.launchMenu = QtWidgets.QMenu()
+        self.trayIcon.setContextMenu(self.launchMenu)
         self.trayIcon.show()
 
-        self.launchMenu = QtWidgets.QMenu()
-        self.launchMenu.setStyleSheet(r"QMenu::separator { height: 2px; background: rgb(35, 35, 35); }")
+        # self.launchMenu.setStyleSheet(r"QMenu::separator { height: 2px; background: rgb(35, 35, 35); }")
         # set width?
-        self.launchMenu.setFixedWidth(150)
+        # self.launchMenu.setFixedWidth(150)
 
         '''
         self.launchMenu.setStyleSheet(
@@ -81,20 +85,22 @@ class BeLauncherUI(QtCore.QObject):
     def _connectWidgets(self):
         """ Connect the sigs
         """
-        self.trayIcon.activated.connect(self._onTrayActivated)
+        # self.trayIcon.activated.connect(self._onTrayActivated)
 
-    def _chooseApplication(self):
+    def chooseApplication(self):
+
+        # TODO mac fix
 
         fileDialog = QtWidgets.QFileDialog()
         appPath = fileDialog.getOpenFileName(
             fileDialog,
             ("Choose an application to add"),
-            "C:\\",
-            "Applications (*.exe)")[0]
+            "/Users/",
+            "Applications (*.app)")[0]
         if appPath:
             self._addApplicationMenu(appPath)
 
-    def _closeApp(self):
+    def closeApp(self):
         QtCore.QCoreApplication.exit()
 
     """
@@ -108,9 +114,8 @@ class BeLauncherUI(QtCore.QObject):
         return menu
     """
 
+    """
     def _onTrayActivated(self, reason):
-        """ If the tray icon is clicked on
-        """
 
         if reason == self.trayIcon.Trigger:
             self.launchMenu.show()
@@ -119,9 +124,10 @@ class BeLauncherUI(QtCore.QObject):
             launcherMenuGeometry = self.launchMenu.frameGeometry()
             centerPoint = trayGeometry.center()
 
-            launcherMenuGeometry.moveBottomLeft(centerPoint)
+            launcherMenuGeometry.moveTopLeft(centerPoint)
             self.launchMenu.move(launcherMenuGeometry.topLeft())
             self.launchMenu.show()
+    """
 
     def path2app(self, path):
         return os.path.split(path)[1]
@@ -209,7 +215,7 @@ class BeLauncherUI(QtCore.QObject):
         mainLayout.addLayout(layoutNewTag)
         mainLayout.addLayout(btnLayout)
 
-        self.addAppMenu.setFixedWidth(250)
+        # self.addAppMenu.setFixedWidth(250)
         self.addAppMenu.setLayout(mainLayout)
         self.addAppMenu.show()
 
