@@ -16,7 +16,6 @@ class BeLauncherUI(QtCore.QObject):
     """ Tray icon and windows for Be Launcher
     """
 
-    # _WRITE_JSON = QtCore.Signal(str, str)
     _WRITE_JSON = QtCore.Signal(object)
 
 
@@ -50,34 +49,7 @@ class BeLauncherUI(QtCore.QObject):
 
         self.launchMenu = QtWidgets.QMenu()
         self.launchMenu.setStyleSheet(r"QMenu::separator { height: 2px; background: rgb(35, 35, 35); }")
-        # set width?
         self.launchMenu.setFixedWidth(150)
-
-        '''
-        self.launchMenu.setStyleSheet(
-        """
-        QMenu {
-        margin: 2px;
-        }
-
-        QMenu::item::selected {
-            background-color: rgb(42, 130, 218);
-        }
-        """
-        )
-        '''
-
-        # formatting leftovers
-
-        """
-        border: 2px solid;
-        background-color: rgb(49,49,49);
-        color: rgb(255,255,255);
-        height: 2px;
-        margin-left: 10px;
-        margin-right: 5px; 
-        background: rgb(35, 35, 35);
-        """
 
     def _connectWidgets(self):
         """ Connect the sigs
@@ -98,17 +70,6 @@ class BeLauncherUI(QtCore.QObject):
     def _closeApp(self):
         QtCore.QCoreApplication.exit()
 
-    """
-    def appMenu(self, apps):
-        menu = QtWidgets.QMenu()
-        # for each app, make a button
-        print("Made the launch menu")
-        for app in apps:
-            button = LauncherAction(app.get("directory"), app.get('tag'), name = app.get("name"))
-            menu.addAction(button)
-        return menu
-    """
-
     def _onTrayActivated(self, reason):
         """ If the tray icon is clicked on
         """
@@ -123,9 +84,6 @@ class BeLauncherUI(QtCore.QObject):
             launcherMenuGeometry.moveBottomLeft(centerPoint)
             self.launchMenu.move(launcherMenuGeometry.topLeft())
             self.launchMenu.show()
-
-    def path2app(self, path):
-        return os.path.split(path)[1]
 
     def preferencesContextMenu(self):
         menu = QtWidgets.QMenu()
@@ -157,7 +115,6 @@ class BeLauncherUI(QtCore.QObject):
         lineName.textChanged[str].connect(self._setNameFromLineEdit)
         
         self.appName = os.path.splitext(os.path.split(appPath)[1])[0]
-        # self.newAppPath = appPath
 
         lineName.setText(self.appName)
         layoutName = QtWidgets.QHBoxLayout()
@@ -185,14 +142,10 @@ class BeLauncherUI(QtCore.QObject):
         layoutNewTag.addWidget(labelTag)
         layoutNewTag.addWidget(lineEditTag)
 
-        # launchAction = LauncherAction(appPath, self.newTag)
-        # launchAction.name = lineName.text()
         print("APP PATH IS {}".format(appPath))
         launcher = {
             "name": "",
             "directory": appPath,
-            # "exe": "",
-            # "icon": "",
             "tag": ""
         }
 
@@ -218,8 +171,6 @@ class BeLauncherUI(QtCore.QObject):
         # update the launcher info
         launcher['name'] = self.appName
         launcher['tag'] = self.newTag
-
-        print(launcher.get("directory"))
 
         # check if tag exists, if not append it
         if self.newTag not in self.tags:

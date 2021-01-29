@@ -70,6 +70,11 @@
         "tag": "Game Dev"
     },
     {
+        "name": "Hammer",
+        "directory": "D:/Games/steamapps/common/Counter-Strike Global Offensive/bin/hammer.exe",
+        "tag": "Game Dev"
+    },
+    {
         "name": "GOG Galaxy",
         "directory": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
         "tag": "Games"
@@ -135,8 +140,8 @@
         "tag": "zWeb"
     },
     {
-        "name": "Hammer",
-        "directory": "D:/Games/steamapps/common/Counter-Strike Global Offensive/bin/hammer.exe",
-        "tag": "Game Dev"
+        "name": "7th Heaven",
+        "directory": "C:/7th Heaven/7th Heaven.exe",
+        "tag": "Games"
     }
 ]

@@ -26,7 +26,6 @@ class BeLauncher(QtCore.QObject):
     """ Main launcher control
     """
 
-    _launch = QtCore.Signal(str) # contains the path to the app being launched
 
     def __init__(self):
         super(BeLauncher, self).__init__()
@@ -42,12 +41,6 @@ class BeLauncher(QtCore.QObject):
         """ Connect core to ui
         """
         self._ui._WRITE_JSON.connect(self._writeAppToJson)
-
-    def _addApplication(self, appPath):
-        """ Shows the 'add application' window and
-            adds an app to the JSON settings file
-        """
-        print("Adding application: {}".format(appPath))
 
     def _getAppsFromJson(self, jsonFile):
         """ Get apps from json list
@@ -111,7 +104,6 @@ class BeLauncher(QtCore.QObject):
             if spacers[i] == -1:
                 self._ui.launchMenu.addSeparator()
             else:
-                # TODO add to the ui menu
                 action = self._ui.launchMenu.addAction(spacers[i].name)
                 action.setIcon(QtGui.QIcon(
                     spacers[i].icon
@@ -125,6 +117,8 @@ class BeLauncher(QtCore.QObject):
         folderAction = self._ui.launchMenu.addAction("Explorer Window")
         folderAction.triggered.connect(self._openExplorerWindow)
         folderAction.setIcon(QtGui.QIcon(_APPLICATION_PATH + "\\resources\\icons\\icon_folder.png"))
+
+        # Add settings and stuff here?
 
     def _writeAppToJson(self, launcher):
         """ Save the app list to the resources json file
@@ -168,7 +162,6 @@ class LauncherAction(QtWidgets.QAction):
         self._tag = tag
         self.icon = self.getIcon(_APPLICATION_PATH, self._name)
         if not os.path.exists(self.icon):
-            print("ICON PATH: {}".format(self.icon))
             extracticon.getIcon(self._path, self.icon)
 
     @staticmethod
