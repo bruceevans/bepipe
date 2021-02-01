@@ -100,6 +100,11 @@
         "tag": "Games"
     },
     {
+        "name": "7th Heaven",
+        "directory": "C:/7th Heaven/7th Heaven.exe",
+        "tag": "Games"
+    },
+    {
         "name": "VLC",
         "directory": "C:/Program Files/VideoLAN/VLC/vlc.exe",
         "tag": "Media"
@@ -140,8 +145,8 @@
         "tag": "zWeb"
     },
     {
-        "name": "7th Heaven",
-        "directory": "C:/7th Heaven/7th Heaven.exe",
-        "tag": "Games"
+        "name": "Photoshop",
+        "directory": "C:/Program Files/Adobe/Adobe Photoshop 2020/Photoshop.exe",
+        "tag": "Art"
     }
 ]

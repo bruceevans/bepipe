@@ -12,11 +12,6 @@
     "Path": "anim/anim-name"
   },
   {
-    "Type": "File",
-    "Path": "anim/anim-name/readme.txt",
-    "Extension": ".txt"
-  },
-  {
     "Type": "Directory",
     "Path": "anim/anim-name/_version"
   },

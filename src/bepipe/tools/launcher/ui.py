@@ -25,9 +25,10 @@ class BeLauncherUI(QtCore.QObject):
         # Blank inits
         self.trayIcon = None
         self.addAppMenu = None
-        self.prefsMenu = None
+        self.settingsMenu = None
 
         # Add app vars
+        self.apps = []
         self.appName = None
         self.newAppPath = None
         self.newTag = None
@@ -89,13 +90,19 @@ class BeLauncherUI(QtCore.QObject):
         menu = QtWidgets.QMenu()
 
         addApplicationAction = menu.addAction("Add Application")
+        addApplicationAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_add.png".format(_APPLICATION_PATH)))
         addApplicationAction.triggered.connect(self._chooseApplication)
 
         settingsAction = menu.addAction("Settings")
+        settingsAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_settings.png".format(_APPLICATION_PATH)))
+        settingsAction.triggered.connect(self._settingsMenu)
 
         aboutAction = menu.addAction("About")
+        aboutAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_info.png".format(_APPLICATION_PATH)))
+        aboutAction.triggered.connect(self._aboutMenu)
 
         closeAction = menu.addAction("Close Launcher")
+        closeAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_close.png".format(_APPLICATION_PATH)))
         closeAction.triggered.connect(self._closeApp)
 
         return menu
@@ -142,7 +149,6 @@ class BeLauncherUI(QtCore.QObject):
         layoutNewTag.addWidget(labelTag)
         layoutNewTag.addWidget(lineEditTag)
 
-        print("APP PATH IS {}".format(appPath))
         launcher = {
             "name": "",
             "directory": appPath,
@@ -166,6 +172,71 @@ class BeLauncherUI(QtCore.QObject):
         self.addAppMenu.setFixedWidth(250)
         self.addAppMenu.setLayout(mainLayout)
         self.addAppMenu.show()
+
+    def _settingsMenu(self):
+        print("Clicked on settings button")
+
+        self.settingsMenu = QtWidgets.QDialog()
+        self.settingsMenu.setWindowTitle("Settings")
+        self.settingsMenu.setWindowIcon(self.icon)
+
+        labelApps = QtWidgets.QLabel("Modify Apps")
+
+        appList = QtWidgets.QListWidget()
+
+        for app in self.apps:
+            newItem = QtWidgets.QListWidgetItem(app.get('name'))
+            appList.addItem(newItem)
+
+        # TODO connect, no lambda
+        btnRenameApp = QtWidgets.QPushButton("Rename App")
+        # btnRenameApp.clicked.connect(lambda : self._renameApplicationMenu(appList))
+        btnDeleteApp = QtWidgets.QPushButton("Delete App")
+        # btnDeleteApp.clicked.connect(lambda : self._removeApplication(appList))
+
+        layoutAppButtons = QtWidgets.QHBoxLayout()
+        layoutAppButtons.addWidget(btnRenameApp)
+        layoutAppButtons.addWidget(btnDeleteApp)
+        
+        labelTags = QtWidgets.QLabel("Modify Tags")
+        listTags = QtWidgets.QListWidget()
+        for tag in self.tags:
+            newItem = QtWidgets.QListWidgetItem(tag)
+            listTags.addItem(newItem)
+
+        # TODO connect, no lambda
+        btnRenameTag = QtWidgets.QPushButton("Rename Tag")
+        # btnRenameTag.clicked.connect(lambda : self._renameTagMenu(listTags))
+        btnDeleteTag = QtWidgets.QPushButton("Delete Tag")
+        # btnDeleteTag.clicked.connect(lambda : self._removeTag(listTags))
+
+        layoutTagButtons = QtWidgets.QHBoxLayout()
+        layoutTagButtons.addWidget(btnRenameTag)
+        layoutTagButtons.addWidget(btnDeleteTag)
+
+        listLayout = QtWidgets.QVBoxLayout()
+        listLayout.addWidget(labelApps)
+        listLayout.addWidget(appList)
+        listLayout.addLayout(layoutAppButtons)
+        listLayout.addWidget(labelTags)
+        listLayout.addWidget(listTags)
+        listLayout.addLayout(layoutTagButtons)
+
+        btnAccept = QtWidgets.QPushButton("OK")
+        # btnAccept.clicked.connect(lambda : self._acceptDialog(self.settingsMenu))
+
+        btnLayout = QtWidgets.QHBoxLayout()
+        btnLayout.addWidget(btnAccept)
+
+        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout.addLayout(listLayout)
+        mainLayout.addLayout(btnLayout)
+
+        self.settingsMenu.setLayout(mainLayout)
+        self.settingsMenu.show()
+
+    def _aboutMenu(self):
+        print("Clicked on about menu")
 
     def _emitAppTag(self, launcher):
         # update the launcher info

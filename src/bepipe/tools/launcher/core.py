@@ -29,7 +29,10 @@ class BeLauncher(QtCore.QObject):
 
     def __init__(self):
         super(BeLauncher, self).__init__()
-        self.apps = []
+
+        self._worker = None
+        self._thread = None
+
         self.laucherActions = []
 
         self._ui = BeLauncherUI()
@@ -69,6 +72,9 @@ class BeLauncher(QtCore.QObject):
             self._ui.launchMenu.removeAction(action)
 
         apps = self._getAppsFromJson(_STORED_APPS)
+
+        # update view data
+        self._ui.apps = apps
 
         # sort new tags
         self._ui.tags = sorted(self._ui.tags)
@@ -123,7 +129,7 @@ class BeLauncher(QtCore.QObject):
     def _writeAppToJson(self, launcher):
         """ Save the app list to the resources json file
         """
-        self.apps = []
+        self._ui.apps = []
 
         appDict = {
             "name": launcher.get("name"),
@@ -135,7 +141,7 @@ class BeLauncher(QtCore.QObject):
         apps = self._getAppsFromJson(jsonFile)
         apps.append(appDict)
         # sort by tag
-        self.apps = sorted(apps, key=lambda i: i['tag'])
+        self._ui.apps = sorted(apps, key=lambda i: i['tag'])
 
         # write to json
         with open(jsonFile, 'w') as j:
@@ -201,8 +207,18 @@ class LauncherAction(QtWidgets.QAction):
         """
         if self._exe:
             if self._exe not in (p.name() for p in psutil.process_iter()):
-                # TODO new thread
-                # subprocess.run(self._path)
                 subprocess.Popen([self._path])
             else:
                 self._message.emit("Oops! {} is already running".format(self._exe))
+
+
+class LaunchApplication(QtCore.QObject):
+
+    def __init__(self, parent = None):
+        super(LaunchApplication, self).__init__(parent=parent)
+        
+    def run(self, app):
+        try:
+            subprocess.run(app)
+        except BaseException as e:
+            print(e)

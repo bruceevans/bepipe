@@ -10,7 +10,7 @@ from . import ui
 import bepipe.core.utility.helpers as utils
 import bepipe.core.utility.bepipeP4 as bepipeP4
 
-_ELEMENTS = ["anim", "lighting", "maps", "mesh", "output", "ref", "rig", "sculpt"]
+_ELEMENTS = ["anim", "maps", "mesh", "output", "ref", "rig", "sculpt"] # TODO "lighting",
 _NO_ASSET = "Select asset..."
 
 class CAT(QtCore.QObject):
@@ -98,7 +98,10 @@ class CAT(QtCore.QObject):
                     relPath = directory.get("Path")
                     newFolder = os.path.join(assetPath, relPath)
                     newFolder = utils.toLinuxPath(newFolder)
-                    os.makedirs(newFolder)  # TODO exception?
+                    try:
+                        os.makedirs(newFolder)  # TODO exception?
+                    except FileExistsError:
+                        continue
 
         return True
 
