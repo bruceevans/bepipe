@@ -10,7 +10,7 @@ NO_PROJECT = "Open a project or create a new one."
 GRAY_TEXT = "color: rgb(150, 150, 150)"
 WHITE_TEXT = "color: rgb(255, 255, 255)"
 
-ICON = "D:\\Projects\\dev\\packages\\bepipe\\resources\\icon_cat.png"
+ICON = "D:\\Projects\\dev\\packages\\bepipe\\resources\\icon_CAT.png"
 
 class Mode(enum.Enum):
     NewAsset = 1

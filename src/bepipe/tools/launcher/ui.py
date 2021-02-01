@@ -9,7 +9,7 @@ import bepipe.core.utility.extracticon as extracticon
 from PySide2 import QtCore, QtGui, QtWidgets
 
 _APPLICATION_PATH = utils.getApplicationPath(__file__)
-_DEFAULT_TAGS = ["Art", "Code", "Games", "Game Dev", "Media", "Productivity", "Utilities", "Web"]
+_DEFAULT_TAGS = ["Art", "Code", "Games", "Game Dev", "Media", "Productivity", "Utilities", "Web", "zBeP"]
 
 
 class BeLauncherUI(QtCore.QObject):
@@ -26,12 +26,11 @@ class BeLauncherUI(QtCore.QObject):
         self.trayIcon = None
         self.addAppMenu = None
         self.settingsMenu = None
-
-        # Add app vars
         self.apps = []
         self.appName = None
         self.newAppPath = None
         self.newTag = None
+        self.newNameAccept = None
 
         self.icon = QtGui.QIcon("{}\\resources\\icons\\launcher_icon.png".format(_APPLICATION_PATH))
         self.tags = _DEFAULT_TAGS
@@ -62,9 +61,9 @@ class BeLauncherUI(QtCore.QObject):
         fileDialog = QtWidgets.QFileDialog()
         appPath = fileDialog.getOpenFileName(
             fileDialog,
-            ("Choose an application to add"),
+            ("Choose an application or batch script to add"),
             "C:\\",
-            "Applications (*.exe)")[0]
+            "Applications or Batch Script *.exe *.bat")[0]
         if appPath:
             self._addApplicationMenu(appPath)
 
@@ -93,14 +92,6 @@ class BeLauncherUI(QtCore.QObject):
         addApplicationAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_add.png".format(_APPLICATION_PATH)))
         addApplicationAction.triggered.connect(self._chooseApplication)
 
-        settingsAction = menu.addAction("Settings")
-        settingsAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_settings.png".format(_APPLICATION_PATH)))
-        settingsAction.triggered.connect(self._settingsMenu)
-
-        aboutAction = menu.addAction("About")
-        aboutAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_info.png".format(_APPLICATION_PATH)))
-        aboutAction.triggered.connect(self._aboutMenu)
-
         closeAction = menu.addAction("Close Launcher")
         closeAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_close.png".format(_APPLICATION_PATH)))
         closeAction.triggered.connect(self._closeApp)
@@ -111,6 +102,7 @@ class BeLauncherUI(QtCore.QObject):
 
     def _addApplicationMenu(self, appPath):
         self.addAppMenu = None
+        self.launcherDict = None
         self.addAppMenu = QtWidgets.QDialog()
         self.addAppMenu.setWindowTitle("Add an application")
         self.addAppMenu.setWindowIcon(self.icon)
@@ -173,70 +165,8 @@ class BeLauncherUI(QtCore.QObject):
         self.addAppMenu.setLayout(mainLayout)
         self.addAppMenu.show()
 
-    def _settingsMenu(self):
-        print("Clicked on settings button")
-
-        self.settingsMenu = QtWidgets.QDialog()
-        self.settingsMenu.setWindowTitle("Settings")
-        self.settingsMenu.setWindowIcon(self.icon)
-
-        labelApps = QtWidgets.QLabel("Modify Apps")
-
-        appList = QtWidgets.QListWidget()
-
-        for app in self.apps:
-            newItem = QtWidgets.QListWidgetItem(app.get('name'))
-            appList.addItem(newItem)
-
-        # TODO connect, no lambda
-        btnRenameApp = QtWidgets.QPushButton("Rename App")
-        # btnRenameApp.clicked.connect(lambda : self._renameApplicationMenu(appList))
-        btnDeleteApp = QtWidgets.QPushButton("Delete App")
-        # btnDeleteApp.clicked.connect(lambda : self._removeApplication(appList))
-
-        layoutAppButtons = QtWidgets.QHBoxLayout()
-        layoutAppButtons.addWidget(btnRenameApp)
-        layoutAppButtons.addWidget(btnDeleteApp)
-        
-        labelTags = QtWidgets.QLabel("Modify Tags")
-        listTags = QtWidgets.QListWidget()
-        for tag in self.tags:
-            newItem = QtWidgets.QListWidgetItem(tag)
-            listTags.addItem(newItem)
-
-        # TODO connect, no lambda
-        btnRenameTag = QtWidgets.QPushButton("Rename Tag")
-        # btnRenameTag.clicked.connect(lambda : self._renameTagMenu(listTags))
-        btnDeleteTag = QtWidgets.QPushButton("Delete Tag")
-        # btnDeleteTag.clicked.connect(lambda : self._removeTag(listTags))
-
-        layoutTagButtons = QtWidgets.QHBoxLayout()
-        layoutTagButtons.addWidget(btnRenameTag)
-        layoutTagButtons.addWidget(btnDeleteTag)
-
-        listLayout = QtWidgets.QVBoxLayout()
-        listLayout.addWidget(labelApps)
-        listLayout.addWidget(appList)
-        listLayout.addLayout(layoutAppButtons)
-        listLayout.addWidget(labelTags)
-        listLayout.addWidget(listTags)
-        listLayout.addLayout(layoutTagButtons)
-
-        btnAccept = QtWidgets.QPushButton("OK")
-        # btnAccept.clicked.connect(lambda : self._acceptDialog(self.settingsMenu))
-
-        btnLayout = QtWidgets.QHBoxLayout()
-        btnLayout.addWidget(btnAccept)
-
-        mainLayout = QtWidgets.QVBoxLayout()
-        mainLayout.addLayout(listLayout)
-        mainLayout.addLayout(btnLayout)
-
-        self.settingsMenu.setLayout(mainLayout)
-        self.settingsMenu.show()
-
-    def _aboutMenu(self):
-        print("Clicked on about menu")
+    def _cancelDialog(self, dialog):
+        dialog.reject()
 
     def _emitAppTag(self, launcher):
         # update the launcher info

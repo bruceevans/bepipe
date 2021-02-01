@@ -20,6 +20,8 @@ from ui import BeLauncherUI
 
 _APPLICATION_PATH = utils.getApplicationPath(__file__)
 _STORED_APPS = _APPLICATION_PATH + "\\resources\\apps.json"
+_MODULE_PATH = _APPLICATION_PATH.split('launcher')[0]
+_CAT = "{}\\cat\\resources\\runCat.bat".format(_MODULE_PATH)
 
 
 class BeLauncher(QtCore.QObject):
@@ -97,26 +99,31 @@ class BeLauncher(QtCore.QObject):
         for i in range(len(tagLists)):
             tagLists[i] = sorted(tagLists[i], key=lambda x: x['name'])
 
-        spacers = []
+        actionList = []
 
         for i in range(len(tagLists)):
-            spacers.append(-1)
+            actionList.append(None)
             for j in range(len(tagLists[i])):
                 action = LauncherAction(tagLists[i][j].get("directory"), tagLists[i][j].get("tag"), name=tagLists[i][j].get("name"))
                 self.laucherActions.append(action)
-                spacers.append(action)
+                actionList.append(action)
         
-        for i in range(len(spacers)):
-            if spacers[i] == -1:
-                self._ui.launchMenu.addSeparator()
-            else:
-                action = self._ui.launchMenu.addAction(spacers[i].name)
+        for i in range(len(actionList)):
+            if actionList[i]:
+                # get the file type for exe/bat test
+                action = self._ui.launchMenu.addAction(actionList[i].name)
                 action.setIcon(QtGui.QIcon(
-                    spacers[i].icon
+                    actionList[i].icon
                 ))
-                action.triggered.connect(spacers[i].launch)
+                action.triggered.connect(actionList[i].launch)
+            else:
+                self._ui.launchMenu.addSeparator()
 
-        # TODO add batch files
+        # Add pipeline stuff here?
+        self._ui.launchMenu.addSeparator()
+        catAction = self._ui.launchMenu.addAction("CAT - BēP")
+        catAction.triggered.connect(self._runCAT)
+        catAction.setIcon(QtGui.QIcon(_APPLICATION_PATH + "\\resources\\icons\\icon_CAT.png"))
 
         # Add the folder button
         self._ui.launchMenu.addSeparator()
@@ -124,7 +131,8 @@ class BeLauncher(QtCore.QObject):
         folderAction.triggered.connect(self._openExplorerWindow)
         folderAction.setIcon(QtGui.QIcon(_APPLICATION_PATH + "\\resources\\icons\\icon_folder.png"))
 
-        # Add settings and stuff here?
+    def _runCAT(self):
+        subprocess.Popen([_CAT])
 
     def _writeAppToJson(self, launcher):
         """ Save the app list to the resources json file
@@ -153,11 +161,14 @@ class BeLauncher(QtCore.QObject):
 class LauncherAction(QtWidgets.QAction):
 
     _message = QtCore.Signal(str)
+    _FILE_TYPES = [".exe", ".bat"]
 
     def __init__(self, path, tag, name = None):
         super(LauncherAction, self).__init__()
 
         self._path = path
+
+        # not actually exe, could be .bat
         self._exe = self.getApplication(self._path)
 
         if name:
@@ -166,9 +177,13 @@ class LauncherAction(QtWidgets.QAction):
             self._name = self._exe.replace(".exe", "")
 
         self._tag = tag
-        self.icon = self.getIcon(_APPLICATION_PATH, self._name)
-        if not os.path.exists(self.icon):
-            extracticon.getIcon(self._path, self.icon)
+
+        if os.path.splitext(self._exe)[1] == '.bat':
+            self.icon = self.getIcon(_APPLICATION_PATH, 'Script')
+        else:
+            self.icon = self.getIcon(_APPLICATION_PATH, self._name)
+            if not os.path.exists(self.icon):
+                extracticon.getIcon(self._path, self.icon)
 
     @staticmethod
     def getIcon(path, iconName):
@@ -206,10 +221,13 @@ class LauncherAction(QtWidgets.QAction):
         """ Launch application or run script
         """
         if self._exe:
-            if self._exe not in (p.name() for p in psutil.process_iter()):
-                subprocess.Popen([self._path])
+            if os.path.splitext(self._exe)[1] in self._FILE_TYPES:
+                if self._exe not in (p.name() for p in psutil.process_iter()):
+                    subprocess.Popen([self._path])
+                else:
+                    self._message.emit("Oops! {} is already running".format(self._exe))
             else:
-                self._message.emit("Oops! {} is already running".format(self._exe))
+                return
 
 
 class LaunchApplication(QtCore.QObject):

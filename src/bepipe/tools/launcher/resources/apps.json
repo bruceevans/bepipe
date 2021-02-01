@@ -35,6 +35,11 @@
         "tag": "Art"
     },
     {
+        "name": "Photoshop",
+        "directory": "C:/Program Files/Adobe/Adobe Photoshop 2020/Photoshop.exe",
+        "tag": "Art"
+    },
+    {
         "name": "VS Code",
         "directory": "C:/Program Files/Microsoft VS Code/Code.exe",
         "tag": "Code"
@@ -100,11 +105,6 @@
         "tag": "Games"
     },
     {
-        "name": "7th Heaven",
-        "directory": "C:/7th Heaven/7th Heaven.exe",
-        "tag": "Games"
-    },
-    {
         "name": "VLC",
         "directory": "C:/Program Files/VideoLAN/VLC/vlc.exe",
         "tag": "Media"
@@ -143,10 +143,5 @@
         "name": "Chrome",
         "directory": "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
         "tag": "zWeb"
-    },
-    {
-        "name": "Photoshop",
-        "directory": "C:/Program Files/Adobe/Adobe Photoshop 2020/Photoshop.exe",
-        "tag": "Art"
     }
 ]
