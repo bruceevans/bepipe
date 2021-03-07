@@ -74,14 +74,6 @@ class CATWindow(QtWidgets.QMainWindow):
         newAssetLayout.addWidget(newAssetLabel)
         newAssetLayout.addWidget(self.newAssetLineEdit)
 
-        # Combobox to select exising assets and modify
-        self.existingAssetLabel = QtWidgets.QLabel("Existing Asset:")
-        self.existingAssetCombo = QtWidgets.QComboBox()
-
-        existingAssetLayout = QtWidgets.QHBoxLayout()
-        existingAssetLayout.addWidget(self.existingAssetLabel)
-        existingAssetLayout.addWidget(self.existingAssetCombo)
-
         # TODO Updating existing asset
         '''
         What does it mean to update?
@@ -93,10 +85,20 @@ class CATWindow(QtWidgets.QMainWindow):
         ignor the combobox (switch modes)
         '''
 
-        assetLayout = QtWidgets.QVBoxLayout()
-        assetLayout.addLayout(newAssetLayout)
-        assetLayout.addLayout(existingAssetLayout)
+        self.assetGroup = QtWidgets.QGroupBox("Existing Assets:")
 
+        # TODO maybe use qlistwidet, keep it simple
+        
+        self.assetList = QtWidgets.QListView()
+        self.listModel = QtGui.QStandardItemModel()
+        self.assetList.setModel(self.listModel)
+
+        assetLayout = QtWidgets.QVBoxLayout()
+        assetLayout.addWidget(self.assetList)
+        self.assetGroup.setLayout(assetLayout)
+        self.assetGroup.hide()
+
+        # TODO make this section collapsable
 
         elementGroup = QtWidgets.QGroupBox("Elements")
         elementLayout = QtWidgets.QVBoxLayout()
@@ -146,7 +148,9 @@ class CATWindow(QtWidgets.QMainWindow):
 
         mainLayout = QtWidgets.QVBoxLayout()
         mainLayout.addLayout(projectTitleLayout)
-        mainLayout.addLayout(assetLayout)
+        mainLayout.addLayout(newAssetLayout)
+        # mainLayout.addLayout(assetLayout)
+        mainLayout.addWidget(self.assetGroup)
         mainLayout.addWidget(elementGroup)
         mainLayout.addWidget(self.btnCreate)
 
@@ -156,21 +160,21 @@ class CATWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle("CAT by Be")
         self.setWindowIcon(self.icon)
-        self.setFixedWidth(400)
+        # self.setFixedWidth(400)
         self.show()
 
     def _connecteSignals(self):
         pass
 
+    # TODO move to qt module, call it bepMessageBox
     def catMessageBox(self, title, msg, func = None, cancelButton = False):
         """ Base message box to display text and confirm button,
             follow up with an optional function call
 
             args:
-            
-            msg (str) : body of the message box
-            func (function) : optional function to call after running
-            cancel (bool) : use a cancel button or not
+                msg (str) : body of the message box
+                func (function) : optional function to call after running
+                cancel (bool) : use a cancel button or not
         """
 
         msgBox = QtWidgets.QMessageBox()

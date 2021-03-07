@@ -32,6 +32,9 @@ class BeLauncherUI(QtCore.QObject):
         self.newTag = None
         self.newNameAccept = None
 
+        self.appListWidget = None
+        self.tagListWidget = None
+
         self.icon = QtGui.QIcon("{}\\resources\\icons\\launcher_icon.png".format(_APPLICATION_PATH))
         self.tags = _DEFAULT_TAGS
 
@@ -91,6 +94,10 @@ class BeLauncherUI(QtCore.QObject):
         addApplicationAction = menu.addAction("Add Application")
         addApplicationAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_add.png".format(_APPLICATION_PATH)))
         addApplicationAction.triggered.connect(self._chooseApplication)
+
+        settingsAction = menu.addAction("Settings")
+        settingsAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_settings.png".format(_APPLICATION_PATH)))
+        settingsAction.triggered.connect(self._settingsDialog)
 
         closeAction = menu.addAction("Close Launcher")
         closeAction.setIcon(QtGui.QIcon("{}\\resources\\icons\\icon_close.png".format(_APPLICATION_PATH)))
@@ -167,6 +174,114 @@ class BeLauncherUI(QtCore.QObject):
 
     def _cancelDialog(self, dialog):
         dialog.reject()
+
+    def _settingsDialog(self):
+        self.settingsMenu = QtWidgets.QDialog()
+        self.settingsMenu.setWindowTitle("Settings")
+        self.settingsMenu.setWindowIcon(self.icon)
+
+        labelApps = QtWidgets.QLabel("Modify Apps")
+        self.appListWidget = QtWidgets.QListWidget()
+        for app in self.apps:
+            newItem = QtWidgets.QListWidgetItem(app.get('name'))
+            self.appListWidget.addItem(newItem)
+
+        btnRenameApp = QtWidgets.QPushButton("Rename App")
+        # btnRenameApp.clicked.connect(lambda : self._renameApplicationMenu(self.appListWidget))
+        btnDeleteApp = QtWidgets.QPushButton("Delete App")
+        # btnDeleteApp.clicked.connect(lambda : self._removeApplication(self.appListWidget))
+
+        layoutAppButtons = QtWidgets.QHBoxLayout()
+        layoutAppButtons.addWidget(btnRenameApp)
+        layoutAppButtons.addWidget(btnDeleteApp)
+
+        labelTags = QtWidgets.QLabel("Modify Tags")
+        self.tagListWidget = QtWidgets.QListWidget()
+        for tag in self.tags:
+            newItem = QtWidgets.QListWidgetItem(tag)
+            self.tagListWidget.addItem(newItem)
+
+        btnRenameTag = QtWidgets.QPushButton("Rename Tag")
+        # btnRenameTag.clicked.connect(lambda : self._renameTagMenu(self.tagListWidget))
+        btnDeleteTag = QtWidgets.QPushButton("Delete Tag")
+        # btnDeleteTag.clicked.connect(lambda : self._removeTag(self.tagListWidget))
+
+        layoutTagButtons = QtWidgets.QHBoxLayout()
+        layoutTagButtons.addWidget(btnRenameTag)
+        layoutTagButtons.addWidget(btnDeleteTag)
+
+        listLayout = QtWidgets.QVBoxLayout()
+        listLayout.addWidget(labelApps)
+        listLayout.addWidget(self.appListWidget)
+        listLayout.addLayout(layoutAppButtons)
+        listLayout.addWidget(labelTags)
+        listLayout.addWidget(self.tagListWidget)
+        listLayout.addLayout(layoutTagButtons)
+
+        btnAccept = QtWidgets.QPushButton("OK")
+        # btnAccept.clicked.connect(lambda : self._acceptDialog(self.settingsMenu))
+
+        btnLayout = QtWidgets.QHBoxLayout()
+        btnLayout.addWidget(btnAccept)
+
+        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout.addLayout(listLayout)
+        mainLayout.addLayout(btnLayout)
+
+        self.settingsMenu.setLayout(mainLayout)
+        self.settingsMenu.show()
+
+    def _renameApplicationMenu(self, listWidget):
+
+        # clear menu
+        del self.renameAppMenu
+
+        self.renameAppMenu = QtWidgets.QDialog()
+        self.renameAppMenu.setWindowTitle("Rename an App")
+        self.renameAppMenu.setWindowIcon(self.mainIcon)
+
+        labelNewName = QtWidgets.QLabel("New Name: ")
+        lineEditName = QtWidgets.QLineEdit()
+
+        layoutNewName = QtWidgets.QHBoxLayout()
+        layoutNewName.addWidget(labelNewName)
+        layoutNewName.addWidget(lineEditName)
+
+        btnAccept = QtWidgets.QPushButton("Accept")
+        btnCancel = QtWidgets.QPushButton("Cancel")
+
+        btnAccept.clicked.connect(lambda : self._renameApplication(self.renameAppMenu, listWidget, lineEditName.text()))
+        btnCancel.clicked.connect(lambda : self._cancelDialog(self.renameAppMenu))
+
+        btnLayout = QtWidgets.QHBoxLayout()
+        btnLayout.addWidget(btnAccept)
+        btnLayout.addWidget(btnCancel)
+
+        mainLayout = QtWidgets.QVBoxLayout()
+        mainLayout.addLayout(layoutNewName)
+        mainLayout.addLayout(btnLayout)
+        self.renameAppMenu.setLayout(mainLayout)
+
+        self.renameAppMenu.show()
+
+    def _renameApplication(self, dialog, listWidget, newName):
+        # update the apps name in the json file and list widget
+        selection = listWidget.currentItem()
+        if not selection:
+            return
+
+        appName = selection.text()
+        appList = self._readAppsFromJson()
+        for entry in appList:
+            if entry.get("name") == appName:
+                entry["name"] = newName
+        self._writeAppList(appList, self.applicationPath + "\\resources\\apps.json")
+
+        selection.setText(newName)
+
+        # initLaunchButtons
+        self._initLauncherButtons()
+        dialog.accept()
 
     def _emitAppTag(self, launcher):
         # update the launcher info

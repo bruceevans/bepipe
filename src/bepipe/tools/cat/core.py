@@ -7,8 +7,8 @@ from P4 import P4Exception
 from PySide2 import QtCore, QtGui, QtWidgets
 
 from . import ui
-import bepipe.core.utility.helpers as utils
-import bepipe.core.utility.bepipeP4 as bepipeP4
+import bepipe.core.utility.path as path
+# import bepipe.core.utility.bepipeP4 as bepipeP4
 
 _ELEMENTS = ["anim", "maps", "mesh", "output", "ref", "rig", "sculpt"] # TODO "lighting",
 _NO_ASSET = "Select asset..."
@@ -68,7 +68,7 @@ class CAT(QtCore.QObject):
         asset = self._createAssetDirectories(self._getElements())
 
         # main project path joined to asset name folder
-        assetPath = utils.toLinuxPath(os.path.join(self.projectDirectory, assetName))
+        assetPath = path.toLinuxPath(os.path.join(self.projectDirectory, assetName))
 
         assetDict = {
             "NAME": assetName,
@@ -80,6 +80,10 @@ class CAT(QtCore.QObject):
 
         if asset:
             self._ui.catMessageBox("Asset Created", "Successfully created asset {}!".format(assetName), self._cleanUp)
+            # append to list view and refresh
+            item = QtGui.QStandardItem(asset)
+            self._ui.listModel.appendRow(item)
+            self._ui.assetList.show()
 
     def _createAssetDirectories(self, elements):
         """ Create folders for each element
@@ -97,7 +101,7 @@ class CAT(QtCore.QObject):
                 if directory.get("Path").find(_ELEMENTS[element]) != -1:
                     relPath = directory.get("Path")
                     newFolder = os.path.join(assetPath, relPath)
-                    newFolder = utils.toLinuxPath(newFolder)
+                    newFolder = path.toLinuxPath(newFolder)
                     try:
                         os.makedirs(newFolder)  # TODO exception?
                     except FileExistsError:
@@ -112,29 +116,34 @@ class CAT(QtCore.QObject):
 
         # TODO deliberately name the json file
 
-        qfd = QtWidgets.QFileDialog()        
-        projectDirectory = QtWidgets.QFileDialog.getExistingDirectory(
-            qfd, ("Choose a project folder or create one ..."))
+        qfd = QtWidgets.QFileDialog()
 
-        if not projectDirectory:
+        # projectDirectory = QtWidgets.QFileDialog.getExistingDirectory(
+            # qfd, ("Choose a project folder or create one ..."))
+
+        projectPath = QtWidgets.QFileDialog.getSaveFileName(
+            qfd,
+            ("Create a .JSON project file..."),
+            filter="JSON Files (*.json *.JSON)")[0]
+
+        if not projectPath:
             return
+        
+        print("The new project file is {}".format(projectPath))
+        projectDirectory = os.path.dirname(projectPath)
 
         self.projectDirectory = projectDirectory
 
-        projectName = os.path.split(projectDirectory)[1]
-        self.projectFile = projectDirectory + "/" + projectName + ".json"
-
-        if os.path.exists(self.projectFile):
-            # File already exists, no need for a new one
-            self._ui.catMessageBox("Uh oh!", "Project already exists!")
-            return
+        projectName = os.path.split(projectPath)[1]
+        self.projectFile = projectDirectory + "/" + projectName
 
         # format project file contents
         projectDict = [
             { "PROJECT": {
                 "PATH": self.projectDirectory
                 # TODO project type
-            } },
+            } 
+            },
             {
                 "ASSETS": []
             }
@@ -142,13 +151,20 @@ class CAT(QtCore.QObject):
 
         self._writeProjectFile(self.projectFile, projectDict)
         self._ui.projectLineEdit.setText(projectName)
+        assets = self._getExistingAssets(self.projectFile)
+        if assets:
+            self._refreshListView(assets)
         return projectName
+
+    def _openProject(self):
+        """ Open existing json project and populate the list view with assets
+        """
 
     def _deleteAsset(self, asset):
         """ Delete existing asset
         """
 
-        if not self._ui.catMessageBox("Hold up!", "Do you really want to delete {}?" % asset, cancelButton=True):
+        if not self._ui.catMessageBox("Hold up!", "Do you really want to delete {}?".format(asset), cancelButton=True):
             return
 
         # TODO remove directory and JSON Entry
@@ -233,6 +249,7 @@ class CAT(QtCore.QObject):
 
         self.projectFile = project
 
+        """
         # Perforce stuff
         if self._ui.usingP4.isChecked():
             self.p4 = bepipeP4.createP4Instance(client='bevans') # TODO setting
@@ -243,23 +260,35 @@ class CAT(QtCore.QObject):
                 bepipeP4.createNewChangelist(self.p4, "Adding assets to project json")
             except P4Exception as e:
                 print(e)
+        """
+
+        # TODO init list view on open
 
         self.projectDirectory = os.path.dirname(project)
         projectName = os.path.splitext(os.path.basename(project))[0]
         self._ui.projectLineEdit.setText(projectName)
 
-        # TODO refresh method
         self._refresh()
-
         self._ui.mode = ui.Mode.ExistingAsset
 
     def _refresh(self):
         assets = self._getExistingAssets(self.projectFile)
-        self._ui.existingAssetCombo.clear()
-        self._ui.existingAssetCombo.addItem(_NO_ASSET)
-        self._ui.existingAssetCombo.addItems(assets)
+        self._refreshListView(assets)
+        # TODO init checkboxes or hide them
 
-        # TODO init checkboxes
+    def _refreshListView(self, assets):
+        # TODO listwidget
+        self._ui.listModel.removeRows(0, self._ui.listModel.rowCount())
+
+        for asset in assets:
+            item = QtGui.QStandardItem(asset)
+            self._ui.listModel.appendRow(item)
+        
+        # show/hide the widget based on number of assets
+        if self._ui.listModel.rowCount(): # TODO listWidget
+            self._ui.assetGroup.show()
+        else:
+            self._ui.assetGroup.hide()
 
     def _updateAsset(self):
         asset = self._getAsset()
@@ -316,20 +345,20 @@ class CAT(QtCore.QObject):
     def newAssetMode(self):
         """ Disables asset combos if there are values in the lineedit
         """
-        self._ui.existingAssetLabel.setDisabled(True)
-        self._ui.existingAssetCombo.setDisabled(True)
-        self._ui.existingAssetLabel.setStyleSheet(ui.GRAY_TEXT)
-        self._ui.existingAssetCombo.setStyleSheet(ui.GRAY_TEXT)
+        # self._ui.existingAssetLabel.setDisabled(True)
+        # self._ui.existingAssetCombo.setDisabled(True)
+        # self._ui.existingAssetLabel.setStyleSheet(ui.GRAY_TEXT)
+        # self._ui.existingAssetCombo.setStyleSheet(ui.GRAY_TEXT)
         self._ui.btnCreate.setText("Create Asset")
         self.mode = ui.Mode.NewAsset
 
     def existingAssetMode(self):
         """ If nothing is in the lineedit and an asset exists
         """
-        self._ui.existingAssetLabel.setDisabled(False)
-        self._ui.existingAssetCombo.setDisabled(False)
-        self._ui.existingAssetLabel.setStyleSheet(ui.WHITE_TEXT)
-        self._ui.existingAssetCombo.setStyleSheet(ui.WHITE_TEXT)
+        # self._ui.existingAssetLabel.setDisabled(False)
+        # self._ui.existingAssetCombo.setDisabled(False)
+        # self._ui.existingAssetLabel.setStyleSheet(ui.WHITE_TEXT)
+        # elf._ui.existingAssetCombo.setStyleSheet(ui.WHITE_TEXT)
         self._ui.btnCreate.setText("Modify Asset")
         self.mode = ui.Mode.ExistingAsset
         # TODO populate check boxes
