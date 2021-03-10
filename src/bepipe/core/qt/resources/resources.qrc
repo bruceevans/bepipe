@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="icons">
+        <file alias="down.png">icons/down.png</file>
+        <file alias="right.png">icons/right.png</file>
+    </qresource>
+</RCC>

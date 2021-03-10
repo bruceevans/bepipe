@@ -1,7 +1,10 @@
-
+import os
 import sys
 import enum
+
 from PySide2 import QtWidgets, QtCore, QtGui
+
+from bepipe.core.qt.collapsableGroupBox import CollapsableGroupBox
 
 # TODO move some of this to Qt module
 # TODO think of some sort of setting system
@@ -10,11 +13,19 @@ NO_PROJECT = "Open a project or create a new one."
 GRAY_TEXT = "color: rgb(150, 150, 150)"
 WHITE_TEXT = "color: rgb(255, 255, 255)"
 
-ICON = "D:\\Projects\\dev\\packages\\bepipe\\resources\\icon_CAT.png"
+# TODO make relative/move to resources
+ICON = os.path.join(os.path.dirname(__file__), "resources/icons/icon_CAT.png")
+
+# TODO icons
+_ASSET_TYPES = ['char', 'environment', 'prop', 'vfx']
+
+# TODO get starter files for different projects
+
 
 class Mode(enum.Enum):
     NewAsset = 1
     ExistingAsset = 2
+
 
 class CATWindow(QtWidgets.QMainWindow):
     """ Main window wrapper for CAT
@@ -30,11 +41,13 @@ class CATWindow(QtWidgets.QMainWindow):
         self.elements = []
 
         self._setupUi()
-        self._connecteSignals()
+        self._connectSignals()
 
     def _setupUi(self):
         """ UI Initialization
         """
+
+        spacer = QtWidgets.QSpacerItem(0, 10)
 
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&File")
@@ -43,7 +56,6 @@ class CATWindow(QtWidgets.QMainWindow):
         self.statusBar()
 
         # Menu actions
-        # project is more of an asset database
         self.newProjectAction = QtWidgets.QAction('New Project', self)
         fileMenu.addAction(self.newProjectAction)
         self.openProjectAction = QtWidgets.QAction('Open Project', self)
@@ -58,6 +70,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.docs = QtWidgets.QAction('Read the Docs', self)
         helpMenu.addAction(self.docs)
 
+        # project info
         projectLabel = QtWidgets.QLabel("Current Project: ")
         self.projectLineEdit = QtWidgets.QLineEdit()
         self.projectLineEdit.setReadOnly(True)
@@ -68,41 +81,34 @@ class CATWindow(QtWidgets.QMainWindow):
         projectTitleLayout.addWidget(projectLabel)
         projectTitleLayout.addWidget(self.projectLineEdit)
 
-        newAssetLabel = QtWidgets.QLabel("New Asset: ")
+        self.assetGroup = QtWidgets.QGroupBox("Existing Assets:")
+
+        self.assetList = QtWidgets.QListWidget()
+        self.assetList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.assetList.setIconSize(QtCore.QSize(16, 16))
+
+        assetLayout = QtWidgets.QVBoxLayout()
+        assetLayout.addWidget(self.assetList)
+        self.assetGroup.setLayout(assetLayout)
+
+        ## BOTTOM CREATE ASSET MENU ##
+
+        newAssetLabel = QtWidgets.QLabel("New asset: ")
         self.newAssetLineEdit = QtWidgets.QLineEdit()
         newAssetLayout = QtWidgets.QHBoxLayout()
         newAssetLayout.addWidget(newAssetLabel)
         newAssetLayout.addWidget(self.newAssetLineEdit)
 
-        # TODO Updating existing asset
-        '''
-        What does it mean to update?
-        1. load info from existing asset (checkboxes)
-        2. update checkboxes (add or remove)
-        3. confirm
+        assetType = QtWidgets.QLabel("Asset type: ")
+        self.assetTypeDropDown = QtWidgets.QComboBox()
+        for type in _ASSET_TYPES:
+            self.assetTypeDropDown.addItem(type)
+        assetTypeLayout = QtWidgets.QHBoxLayout()
+        assetTypeLayout.addWidget(assetType)
+        assetTypeLayout.addWidget(self.assetTypeDropDown)
 
-        If there is text in the new asset lineedit,
-        ignor the combobox (switch modes)
-        '''
-
-        self.assetGroup = QtWidgets.QGroupBox("Existing Assets:")
-
-        # TODO maybe use qlistwidet, keep it simple
-        
-        self.assetList = QtWidgets.QListView()
-        self.listModel = QtGui.QStandardItemModel()
-        self.assetList.setModel(self.listModel)
-
-        assetLayout = QtWidgets.QVBoxLayout()
-        assetLayout.addWidget(self.assetList)
-        self.assetGroup.setLayout(assetLayout)
-        self.assetGroup.hide()
-
-        # TODO make this section collapsable
-
-        elementGroup = QtWidgets.QGroupBox("Elements")
         elementLayout = QtWidgets.QVBoxLayout()
-
+        elementLabel = QtWidgets.QLabel("Choose asset elements:")
         animationCheckBox = QtWidgets.QCheckBox("Animation")
         animationCheckBox.setChecked(True)
         animationCheckBox.setStatusTip("Create an 'anim' folder to hold individual animations, IDLE, Walk, etc.")
@@ -132,6 +138,7 @@ class CATWindow(QtWidgets.QMainWindow):
         sculptCheckBox.setStatusTip("Create a 'sculpt' folder to hold all sculpting projects and versions")
         self.elements.append(sculptCheckBox)
 
+        elementLayout.addWidget(elementLabel)
         elementLayout.addWidget(animationCheckBox)
         elementLayout.addWidget(mapsCheckBox)
         elementLayout.addWidget(meshCheckBox)
@@ -139,82 +146,70 @@ class CATWindow(QtWidgets.QMainWindow):
         elementLayout.addWidget(refCheckBox)
         elementLayout.addWidget(rigCheckBox)
         elementLayout.addWidget(sculptCheckBox)
-        elementGroup.setLayout(elementLayout)
 
         self.btnCreate = QtWidgets.QPushButton("Create Asset")
         self.btnCreate.setEnabled(False)
         self.btnCreate.setStyleSheet(GRAY_TEXT)
         self.btnCreate.setFixedHeight(40)
 
-        mainLayout = QtWidgets.QVBoxLayout()
-        mainLayout.addLayout(projectTitleLayout)
-        mainLayout.addLayout(newAssetLayout)
-        # mainLayout.addLayout(assetLayout)
-        mainLayout.addWidget(self.assetGroup)
-        mainLayout.addWidget(elementGroup)
-        mainLayout.addWidget(self.btnCreate)
+        self.createAssetGroup = CollapsableGroupBox("Create New Asset")
+        createAssetLayout = QtWidgets.QVBoxLayout()
+        createAssetLayout.addLayout(newAssetLayout)
+        createAssetLayout.addLayout(assetTypeLayout)
+        createAssetLayout.addLayout(elementLayout)
+        createAssetLayout.addWidget(self.btnCreate)
+
+        self.createAssetGroup.setLayout(createAssetLayout)
+        # get collapsed window size TODO
+        self.createAssetGroup.toggleGroup()
+
+        self.mainLayout = QtWidgets.QVBoxLayout()
+        self.mainLayout.addItem(spacer)
+        self.mainLayout.addLayout(projectTitleLayout)
+        self.mainLayout.addItem(spacer)
+        self.mainLayout.addWidget(self.assetGroup)
+        self.mainLayout.addItem(spacer)
+        self.mainLayout.addWidget(self.createAssetGroup)
+        self.mainLayout.addItem(spacer)
 
         centralWidget = QtWidgets.QWidget()
-        centralWidget.setLayout(mainLayout)
+        centralWidget.setLayout(self.mainLayout)
         self.setCentralWidget(centralWidget)
 
         self.setWindowTitle("CAT by Be")
         self.setWindowIcon(self.icon)
-        # self.setFixedWidth(400)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.setSizePolicy(sizePolicy)
+        self.setFixedWidth(350)
         self.show()
 
-    def _connecteSignals(self):
-        pass
-
-    # TODO move to qt module, call it bepMessageBox
-    def catMessageBox(self, title, msg, func = None, cancelButton = False):
-        """ Base message box to display text and confirm button,
-            follow up with an optional function call
-
-            args:
-                msg (str) : body of the message box
-                func (function) : optional function to call after running
-                cancel (bool) : use a cancel button or not
-        """
-
-        msgBox = QtWidgets.QMessageBox()
-        # TODO icon
-        msgBox.setIcon(QtWidgets.QMessageBox.NoIcon)
-        msgBox.setWindowTitle(title)
-        msgBox.setText(msg)
-
-        if cancelButton:
-            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-        else:
-            msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-
-        result = msgBox.exec_()
-        if result == QtWidgets.QMessageBox.Ok:
-            if func:
-                func()  # TODO may need to pass args as well
-            else:
-                return True
-        else:
-            # Hit cancel, don't run the func
-            return False
+    def _connectSignals(self):
+        self.assetList.customContextMenuRequested.connect(self.assetContextMenu)
 
     def closeEvent(self, event):
         # connect close signal
         self.close.emit()
         event.accept()
 
+    def assetContextMenu(self, point):
+        """ Context menu actions for created assets
         """
-        print("close event")
-        result = QtWidgets.QMessageBox.question(
-            self,
-            "Closing",
-            "Exit and submit changes?",
-            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-        event.ignore()
-        if result == QtWidgets.QMessageBox.Yes:
-            print("closing and emitting")
-            self.close.emit()
-            event.accept()
-        else:
-            event.ignore()
-        """
+
+        asset = self.assetList.indexAt(point)
+        print(asset)
+
+        if not asset:
+            return
+
+        menu = QtWidgets.QMenu()
+        openOnDisk = QtWidgets.QAction("Open on Disk")
+        modifyElements = QtWidgets.QAction("Modify Elements")
+        rename = QtWidgets.QAction("Rename Asset") # more involved than you think
+        delete = QtWidgets.QAction("Delete Asset")
+
+        menu.addAction(openOnDisk)
+        menu.addAction(modifyElements)
+        menu.addAction(rename)
+        menu.addAction(delete)
+
+        menu.exec_(self.assetList.mapToGlobal(point))
