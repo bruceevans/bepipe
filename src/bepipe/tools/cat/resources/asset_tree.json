@@ -5,130 +5,167 @@
   },
   {
     "Type": "Directory",
-    "Path": "anim"
+    "Path": "animation",
+    "ElementType":"animation"
   },
   {
     "Type": "Directory",
-    "Path": "anim/anim-name"
+    "Path": "animation/animation-name",
+    "ElementType":"animation"
   },
   {
     "Type": "Directory",
-    "Path": "anim/anim-name/_version"
+    "Path": "animation/animation-name/_version",
+    "ElementType":"animation"
   },
   {
     "Type": "Directory",
-    "Path": "anim/anim-name/_version/official"
+    "Path": "animation/animation-name/_version/official",
+    "ElementType":"animation"
   },
   {
     "Type": "Directory",
-    "Path": "maps"
+    "Path": "maps",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/psd"
+    "Path": "maps/psd",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/sbd"
+    "Path": "maps/sbd",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/sbd/map-exports"
+    "Path": "maps/sbd/map-exports",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/sbp"
+    "Path": "maps/sbp",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/sbp/bake"
+    "Path": "maps/sbp/bake",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/sbp/map-exports"
+    "Path": "maps/sbp/map-exports",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/tga"
+    "Path": "maps/tga",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/_version"
+    "Path": "maps/_version",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "maps/_version/official"
+    "Path": "maps/_version/official",
+    "ElementType":"maps"
   },
   {
     "Type": "Directory",
-    "Path": "mesh"
+    "Path": "mesh",
+    "ElementType":"mesh"
   },
   {
     "Type": "Directory",
-    "Path": "mesh/_version"
+    "Path": "mesh/_version",
+    "ElementType":"mesh"
   },
   {
     "Type": "Directory",
-    "Path": "mesh/_version/official"
+    "Path": "mesh/_version/official",
+    "ElementType":"mesh"
   },
   {
     "Type": "Directory",
-    "Path": "output"
+    "Path": "output",
+    "ElementType":"output"
   },
   {
     "Type": "Directory",
-    "Path": "output/turntable"
+    "Path": "output/turntable",
+    "ElementType":"output"
   },
   {
     "Type": "Directory",
-    "Path": "output/turntable/_version"
+    "Path": "output/turntable/_version",
+    "ElementType":"output"
   },
   {
     "Type": "Directory",
-    "Path": "output/turntable/_version/official"
+    "Path": "output/turntable/_version/official",
+    "ElementType":"output"
   },
   {
     "Type": "Directory",
-    "Path": "reference"
+    "Path": "reference",
+    "ElementType":"reference"
   },
   {
     "Type": "Directory",
-    "Path": "reference/images"
+    "Path": "reference/images",
+    "ElementType":"reference"
   },
   {
     "Type": "Directory",
-    "Path": "reference/movies"
+    "Path": "reference/movies",
+    "ElementType":"reference"
   },
   {
     "Type": "Directory",
-    "Path": "rig"
+    "Path": "rig",
+    "ElementType":"rig"
   },
   {
     "Type": "Directory",
-    "Path": "rig/_version"
+    "Path": "rig/_version",
+    "ElementType":"rig"
   },
   {
     "Type": "Directory",
-    "Path": "rig/_version/official"
+    "Path": "rig/_version/official",
+    "ElementType":"rig"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt"
+    "Path": "sculpt",
+    "ElementType":"sculpt"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/basemesh"
+    "Path": "sculpt/basemesh",
+    "ElementType":"sculpt"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/zb"
+    "Path": "sculpt/zb",
+    "ElementType":"sculpt"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/_version"
+    "Path": "sculpt/zb/decimated",
+    "ElementType":"sculpt"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/_version/official"
+    "Path": "sculpt/_version",
+    "ElementType":"sculpt"
+  },
+  {
+    "Type": "Directory",
+    "Path": "sculpt/_version/official",
+    "ElementType":"sculpt"
   }
 ]

@@ -1,6 +1,7 @@
 # Project file reading and writing
 
 import os
+from pprint import pprint
 
 import jsonUtilities
 
@@ -24,20 +25,49 @@ def createProject(projectPath, projectName):
         }
     ]
 
-    return jsonUtilities.writeJson(projectName, projectDict)
+    return jsonUtilities.writeJson(projectPath, projectDict)
 
-def getProjectContents(projectFile):
+def getProjectAssets(projectFile):
     """ Get all entries in the project file
 
         args:
-            projectFile (str) path to json project file
+            projectFile (str): path to json project file
         
         returns:
-            dict (str) project contens
+            dict (str): project contens
     """
 
-def openProject(self):
+    try:
+        assets = jsonUtilities.readJsonFile(projectFile)[1].get("ASSETS")
+    except IndexError:
+        # no assets
+        return None
+    return assets
+
+def openProject():
     """ Open existing project json
+    """
+
+def removeAssetEntry(projectFile, asset):
+    """ Remove entry from project file
+
+        args:
+            projectFile (str): path to project
+            asset (dict): psset to remove
+    """
+
+    projectData = jsonUtilities.readJsonFile(projectFile)
+    assets = projectData[1].get("ASSETS")
+    modifiedAssets = [a for a in assets if a != asset]
+    projectData[1]["ASSETS"] = modifiedAssets
+    jsonUtilities.writeJson(projectFile, projectData)
+
+def renameAssetEntry(newName):
+    """
+        Change the "NAME" key to the given value
+
+        args:
+            newName (str): new name
     """
 
 def writeProjectFile():

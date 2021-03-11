@@ -15,8 +15,6 @@ class CollapsableGroupBox(QtWidgets.QGroupBox):
     """ Group box widget with collapseable toggle
     """
 
-    resized = QtCore.Signal()
-
     def __init__(self, title=None, func=None):
         super(CollapsableGroupBox, self).__init__()
 
@@ -29,10 +27,9 @@ class CollapsableGroupBox(QtWidgets.QGroupBox):
         self.toggled.connect(self.toggleGroup)
         
     def toggleGroup(self):
-        self.resized.emit()
         if self.isChecked():
             self.setFixedHeight(self.sizeHint().height())
         else:
-            self.setFixedHeight(30)
+            self.setFixedHeight(25)
         if self.func:
             self.func()

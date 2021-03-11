@@ -1,6 +1,7 @@
 # anything that involves reading/writing asset to json files
 
 import os
+import shutil
 from pprint import pprint
 
 import jsonUtilities
@@ -10,6 +11,15 @@ _ASSET_TREE = "resources/asset_tree.json"
 
 def createAssetDict(assetName, assetType, elements, assetPath):
     """ Organize asset data into a dict
+
+        args:
+            assetName (str): name for the asset
+            assetType (str): type of asset
+            elements (str list): which element to create
+            assetPath (str): path to asset
+
+        returns:
+            dict
     """
 
     assetDict = {
@@ -38,8 +48,7 @@ def createAssetDirectories(projectDirectory, asset):
 
     for element in asset.get("ELEMENTS"):  # element is an index
         for directory in templateDirs:
-            # TODO may need to rethink this, maybe add an element key to each asset dir in template file
-            if directory.get("Path").find(element.lower()) != -1:
+            if directory.get("ElementType") == element.lower():
                 relPath = directory.get("Path")
                 newFolder = os.path.join(assetPath, relPath)
                 newFolder = path.toLinuxPath(newFolder)
@@ -50,37 +59,47 @@ def createAssetDirectories(projectDirectory, asset):
                     continue
     return True
 
-def deleteAsset():
+def deleteAssetDirectory(path):
     """ Delete an existing asset
-    """
-
-def getExistingAssets(projectFile):
-    """ Return a list of assets in a project
 
         args:
-            projectFile (str) path to json project file
-            type (bool) return asset type in the list
+            path (str): path to directory
+    """
+    shutil.rmtree(path)
 
-        returns:
-            dict list: asset names (and type)
+def _getTemplateDirectories():
+    """ Get the folder structure from the template directory
+        json file in the resources folder
     """
 
-    # All assets are in an "ASSETS" key in the project file
-    projectData = jsonUtilities.readJsonFile(projectFile)
-    assets = projectData[1].get("ASSETS")
-    return assets
-
-def modifyAssetName():
-    """
-    """
+    baseDirectory = os.path.dirname(__file__)
+    templateFile = os.path.join(baseDirectory, _ASSET_TREE)
+    templateData = jsonUtilities.readJsonFile(templateFile)
+    tempDirs = return [i for i in templateData if i.get("Type") == "Directory"]
+    return tempDirs
 
 def modifyAssetElements():
     """
     """
 
-def openOnDisk():
+def openOnDisk(path):
+    """ Open the asset in explorer/finder
+
+        args:
+            path (str): path to directory
     """
+    if os.path.isdir(path):
+        os.startfile(path)
+
+def renameAsset(newName):
+    """ Rename all dirs and files in the tree
+
+        args:
+            newName (str): new name
     """
+
+    # get the old name and new name
+    # walk the tree, any file or directory with that name, replace it
 
 def writeAssetToFile(projectFile, asset):
     """ Add a json entry for a new asset
@@ -93,24 +112,12 @@ def writeAssetToFile(projectFile, asset):
             bool
     """
 
-    projectData = jsonUtilities.readJsonFile(projectFile)
-    pprint(projectData)
-    pprint(projectData[1])
+    try:
+        projectData = jsonUtilities.readJsonFile(projectFile)
+    except FileNotFoundError:
+        projectData=[]
+
+    # TODO what if there aren't any assets?
+    
     projectData[1].get('ASSETS').append(asset)
     return jsonUtilities.writeJson(projectFile, projectData)
-
-def _getTemplateDirectories():
-    """ Get the folder structure from the template directory
-        json file in the resources folder
-    """
-    baseDirectory = os.path.dirname(__file__)
-    templateFile = os.path.join(baseDirectory, _ASSET_TREE)
-
-    templateData = jsonUtilities.readJsonFile(templateFile)
-
-    templateDirs = []
-    for obj in templateData:
-        if obj.get("Type") == "Directory":
-            templateDirs.append(obj)
-    return templateDirs
-

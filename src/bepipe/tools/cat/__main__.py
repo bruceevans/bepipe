@@ -23,3 +23,16 @@ def run():
 
 if __name__ == "__main__":
     run()
+
+
+"""
+IDEAS:
+1. Thumbnails on hover (right-click, 'Create Thumbnail')
+    - If using blender preference
+2. Startup files (empty project files)
+3. When existing asset is selected, asset subpalette becomes 'view more info' palette
+5. Link to docs
+
+QOL:
+- Open Recent Project
+"""

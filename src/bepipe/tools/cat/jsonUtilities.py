@@ -31,6 +31,8 @@ def writeJson(fileName, data):
 
     with open(fileName, 'w') as f:
         try:
+            print(data)
+            print(fileName)
             json.dump(data, f, indent=4)
         except Exception as e:
             print(e)
