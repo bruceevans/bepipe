@@ -67,6 +67,16 @@ def deleteAssetDirectory(path):
     """
     shutil.rmtree(path)
 
+def getElements(asset):
+    return asset.get('ELEMENTS')
+
+def _getListOfFiles(dirName):
+    files = []
+    for file in os.walk(dirName):
+        files.append(file[0])
+    pprint(files)
+    return files
+
 def _getTemplateDirectories():
     """ Get the folder structure from the template directory
         json file in the resources folder
@@ -75,7 +85,7 @@ def _getTemplateDirectories():
     baseDirectory = os.path.dirname(__file__)
     templateFile = os.path.join(baseDirectory, _ASSET_TREE)
     templateData = jsonUtilities.readJsonFile(templateFile)
-    tempDirs = return [i for i in templateData if i.get("Type") == "Directory"]
+    tempDirs = [i for i in templateData if i.get("Type") == "Directory"]
     return tempDirs
 
 def modifyAssetElements():
@@ -91,12 +101,22 @@ def openOnDisk(path):
     if os.path.isdir(path):
         os.startfile(path)
 
-def renameAsset(newName):
+def renameAsset(assetPath, oldName, newName):
     """ Rename all dirs and files in the tree
 
         args:
             newName (str): new name
     """
+
+    # TODO illegal names
+
+    # walk through the dirs and files
+    for file in _getListOfFiles(assetPath):
+        if oldName in file:
+            print("Changing:")
+            print(file)
+            file.replace(oldName, newName)
+            print(file)
 
     # get the old name and new name
     # walk the tree, any file or directory with that name, replace it

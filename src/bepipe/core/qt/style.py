@@ -1,12 +1,15 @@
-###############################################################################
-# Be Pipe is a simple asset creation pipeline built around a set of common tools
-# This software is free for use and modification and no warranty offered for
-# using the tool set. If you have questions or comments please email me at
-# brucein3d@gmail.com.
-###############################################################################
+
+# File to hold some general Qt StyleSheet
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QPalette, QColor
+
+GRAY_TEXT = "color: rgb(150, 150, 150)"
+WHITE_TEXT = "color: rgb(255, 255, 255)"
+RED_TEXT = "color: rgc(220, 20, 20)"
+GREEN_TEXT = "color: rgb(20, 220, 20)"
+BLUE_TEXT = "color: rgb(20, 20, 220)"
+
 
 def setDark():
 

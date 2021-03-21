@@ -9,23 +9,14 @@ import ui
 import assets
 import project
 import jsonUtilities
+import bepipe.core.qt.style as style
 import bepipe.core.utility.path as path
 
-from bepipe.core.qt.bepListWidgetItem import BepListWidgetItem
 from bepipe.core.qt.bepMessageBox import bepMessageBox
+from bepipe.core.qt.bepListWidgetItem import BepListWidgetItem
 
 
-# TODO when existing asset is selected, check the existing elements and set it all to read only
-
-_ELEMENTS = ["animation", "maps", "mesh", "output", "ref", "rig", "sculpt"] # TODO "lighting",
 _NO_ASSET = "Select asset..."
-_FILE_DIRECTORY = os.path.dirname(__file__)
-_ASSET_ICONS = {
-    'char': os.path.join(_FILE_DIRECTORY, 'resources/icons/char.png'),
-    'environment': os.path.join(_FILE_DIRECTORY, 'resources/icons/environment.png'),
-    'prop': os.path.join(_FILE_DIRECTORY, 'resources/icons/prop.png'),
-    'vfx': os.path.join(_FILE_DIRECTORY, 'resources/icons/vfx.png')
-}
 
 
 class CAT(QtCore.QObject):
@@ -41,27 +32,28 @@ class CAT(QtCore.QObject):
         self.projectPath = None
         self.projectName = None
 
+        self.assetElements = None
+
         self._ui = ui.CATWindow()
         self._connectWidgets()
         self._ui.show()
 
     def _connectWidgets(self):
-        self._ui.btnCreate.clicked.connect(self._createNewAsset)
+        # self._ui.btnCreate.clicked.connect(self._createNewAsset)
         self._ui.newProjectAction.triggered.connect(self._createNewProject)
         self._ui.openProjectAction.triggered.connect(self._openExistingProject)
-        self._ui.newAssetLineEdit.textChanged.connect(self._toggleMode)
         self._ui.assetList.currentItemChanged.connect(self._getSelectedAssetInList)
 
         self._ui.openOnDisk.triggered.connect(self._openAssetDirectory)
         # self._ui.modifyElements.triggered.connect(self._modifyAssetElements)
-        # self._ui.rename.triggered.connect(self._renameAsset)
+        self._ui.rename.triggered.connect(self._renameAsset)
         self._ui.delete.triggered.connect(self._deleteAsset)
 
     def _createNewAsset(self):
         
         assetName = self._ui.newAssetLineEdit.text()
         assetType = self._ui.assetTypeDropDown.currentText()
-        elements = [self._ui.elements[i].text() for i in self._getCheckedElementsFromUI()]
+        elements = self._getCheckedElementsFromUI()
         assetPath = path.toLinuxPath(os.path.join(self.projectDirectory, assetName))
 
         if os.path.exists(assetPath):
@@ -76,6 +68,7 @@ class CAT(QtCore.QObject):
             return
 
         # TODO actual cleaning func
+        # TODO if has custom elemt, readonly, etc.
         self._ui.newAssetLineEdit.setText("")
         self._refresh(newAsset=asset)
         bepMessageBox("Asset Created!", "Created {}!".format(assetName))
@@ -110,7 +103,6 @@ class CAT(QtCore.QObject):
     def _createMode(self):
         """ Mode for creating new objects
         """
-        print("Create mode")
         self._ui.mode = ui.Mode.Create
         # deselect
         # self._ui.assetList.
@@ -136,26 +128,18 @@ class CAT(QtCore.QObject):
         self._removeListWidgetItem(self._ui.contextAssetIndex)
         return True
 
-    def _editMode(self, asset=None):
-        """ Mode for editing existing objects
-        """
-        print("Edit mode")
-        self._ui.mode = ui.Mode.Edit
-        if asset:
-            print(asset)
-        self._toggleLabels(self._ui.mode)
-
-        if asset:
-            self._toggleElementCheckboxes(self._ui.mode, asset.get("ELEMENTS"))
-
     def _getCheckedElementsFromUI(self):
         """ Return a list of element to create as an index of ints
         """
 
         elements = []
-        for i, element in enumerate(self._ui.elements):
+        for element in self._ui.elements:
             if element.isChecked():
-                elements.append(i)
+                elements.append(element.text())
+
+        if self._ui.customElement.isChecked():
+            elements.append(self._ui.customElementLineEdit.text())
+
         return elements
 
     def _getSelectedAssetInList(self):
@@ -164,15 +148,14 @@ class CAT(QtCore.QObject):
 
         if not self._ui.assetList.currentItem():
             self._createMode()
+            self._ui.assetInfoLayout = self._ui._noAsset()
             return
 
-        # Check if there is any text in the create asset line edit
-        if len(self._ui.newAssetLineEdit.text()) > 0:
-            self._createMode()
-            return
+        asset = self._ui.assetList.currentItem()
 
-        selectedAsset = self._ui.assetList.currentItem()
-        self._editMode(selectedAsset.assetData)
+        print("TODO update the asset info")
+
+        return asset
 
     def _help(self):
         """Link to online documentation
@@ -222,13 +205,13 @@ class CAT(QtCore.QObject):
             # TODO clear list widget items
             for asset in existingAssets:
                 assetItem = BepListWidgetItem(asset)
-                assetItem.setIcon(QtGui.QIcon(_ASSET_ICONS.get(asset.get("TYPE"))))
+                assetItem.setIcon(QtGui.QIcon(ui.ASSET_ICONS.get(asset.get("TYPE"))))
                 assetItem.setText(asset.get("NAME"))
                 self._ui.assetList.addItem(assetItem)
 
         if newAsset:
             assetItem = BepListWidgetItem(newAsset)
-            assetItem.setIcon(QtGui.QIcon(_ASSET_ICONS.get(newAsset.get("TYPE"))))
+            assetItem.setIcon(QtGui.QIcon(ui.ASSET_ICONS.get(newAsset.get("TYPE"))))
             assetItem.setText(newAsset.get("NAME"))
             self._ui.assetList.addItem(assetItem)
 
@@ -236,6 +219,13 @@ class CAT(QtCore.QObject):
 
     def _removeListWidgetItem(self, asset):
         self._ui.assetList.takeItem(asset.row())
+
+    def _renameAsset(self):
+        if not self._ui.contextAssetIndex:
+            bepMessageBox("Oops", "Couldn't find an asset to rename, make a selection and try again.")
+            return
+        asset = self._ui.assetList.itemFromIndex(self._ui.contextAssetIndex)
+        assets.renameAsset(asset.assetData.get("PATH"))
 
     def _resetCheckboxes(self):
         for uiElement in self._ui.elements:
@@ -261,11 +251,10 @@ class CAT(QtCore.QObject):
         """
 
         if mode == ui.Mode.Create:
-            print("Create checkboxes")
             for uiElement in self._ui.elements:
                 uiElement.setChecked(True)
                 uiElement.setEnabled(True)
-                uiElement.setStyleSheet(ui.WHITE_TEXT)
+                uiElement.setStyleSheet(style.WHITE_TEXT)
         else:
 
             # read only
@@ -279,7 +268,7 @@ class CAT(QtCore.QObject):
                 for uiElement in self._ui.elements:
                     uiElement.setChecked(True)
                     uiElement.setEnabled(False)
-                    uiElement.setStyleSheet(ui.GREEN_TEXT)
+                    uiElement.setStyleSheet(style.GREEN_TEXT)
 
                 for uiElement in self._ui.elements:
                     checkBoxes.append(uiElement)
@@ -290,21 +279,19 @@ class CAT(QtCore.QObject):
                 unchecked = [x for x in checkBoxes if x not in checked]
                 for cb in unchecked:
                     cb.setChecked(False)
-                    cb.setStyleSheet(ui.GRAY_TEXT)
+                    cb.setStyleSheet(style.GRAY_TEXT)
 
     def _toggleLabels(self, mode):
         """ If an asset is selected, toggle the labels to match
         """
 
         if mode == ui.Mode.Create:
-            print("Create labeling")
-            self._ui.btnCreate.setStyleSheet(ui.WHITE_TEXT)
+            self._ui.btnCreate.setStyleSheet(style.WHITE_TEXT)
             self._ui.btnCreate.setEnabled(True)
             # deselect from the list?
 
         else:
-            print("Edit labeling")
-            self._ui.btnCreate.setStyleSheet(ui.GRAY_TEXT)
+            self._ui.btnCreate.setStyleSheet(style.GRAY_TEXT)
             self._ui.btnCreate.setEnabled(False)
 
     def _toggleMode(self):

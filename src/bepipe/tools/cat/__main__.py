@@ -6,7 +6,7 @@ import sys
 sys.path.append("D:\\Projects\\dev\\packages\\bepipe\\src\\")
 
 from PySide2 import QtWidgets
-import bepipe.core.qt.themes as themes
+import bepipe.core.qt.style as style
 import bepipe.tools.cat.core as core
 
 _CAT = None
@@ -17,7 +17,7 @@ def run():
     global _CAT
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
-    app.setPalette(themes.setDark())
+    app.setPalette(style.setDark())
     _CAT = core.CAT()
     sys.exit(app.exec_())
 
@@ -30,8 +30,11 @@ IDEAS:
 1. Thumbnails on hover (right-click, 'Create Thumbnail')
     - If using blender preference
 2. Startup files (empty project files)
-3. When existing asset is selected, asset subpalette becomes 'view more info' palette
 5. Link to docs
+6. 'Custom' or 'User' element
+7. .bep file and icon
+8. Creast asset should be a new window
+9. Asset info should be a better panel
 
 QOL:
 - Open Recent Project

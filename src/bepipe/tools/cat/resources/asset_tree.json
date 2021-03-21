@@ -23,6 +23,25 @@
     "Path": "animation/animation-name/_version/official",
     "ElementType":"animation"
   },
+
+  {
+    "Type": "Directory",
+    "Path": "lighting",
+    "ElementType":"lighting"
+  },
+
+  {
+    "Type": "Directory",
+    "Path": "lighting/_version",
+    "ElementType":"lighting"
+  },
+
+  {
+    "Type": "Directory",
+    "Path": "lighting/_version/official",
+    "ElementType":"lighting"
+  },
+
   {
     "Type": "Directory",
     "Path": "maps",

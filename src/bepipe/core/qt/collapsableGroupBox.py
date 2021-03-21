@@ -1,6 +1,8 @@
 from PySide2 import QtCore, QtGui, QtWidgets
 from .resources import resources
 
+
+# This was compiled via qrc
 _COLLAPSE_STYLE = """
 QGroupBox::indicator:unchecked {
     image: url(:/icons/right.png);

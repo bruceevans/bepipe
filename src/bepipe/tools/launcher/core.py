@@ -27,8 +27,6 @@ _CAT = "{}\\cat\\resources\\runCat.bat".format(_MODULE_PATH)
 class BeLauncher(QtCore.QObject):
     """ Main launcher control
     """
-
-
     def __init__(self):
         super(BeLauncher, self).__init__()
 

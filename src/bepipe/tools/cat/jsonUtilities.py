@@ -4,11 +4,21 @@ import os
 import json
 import pprint as pp
 
+def bepToJson(bepFile):
+    """ Replace the file extension
+    """
+    directory = os.path.dirname(bepFile)
+    fileName = os.path.basename(bepFile)
+    extension = os.path.splitext(bepFile)[1]
+    fileName = fileName.replace(extension, ".json")
+    jsonFile = os.path.join(directory, fileName)
+    os.rename(bepFile, jsonFile)
+
 def readJsonFile(jsonFile):
     """ Open a json file and return all data
 
         args:
-            jsonFile (str): Path to json file
+            jsonFile (str): path to json file
 
         returns:
             dict
@@ -17,6 +27,19 @@ def readJsonFile(jsonFile):
     with open(jsonFile, 'r') as readFile:
         data=json.load(readFile)
     return data
+
+def jsonToBep(jsonFile):
+    """ Rename the file to .bep
+
+        args:
+            jsonFile: path to jason file
+    """
+    directory = os.path.dirname(jsonFile)
+    fileName = os.path.basename(jsonFile)
+    extension = os.path.splitext(jsonFile)[1]
+    fileName = fileName.replace(extension, ".bep")
+    bepFile = os.path.join(directory, fileName)
+    os.rename(jsonFile, bepFile)
 
 def writeJson(fileName, data):
     """General write to json file helper
@@ -31,8 +54,6 @@ def writeJson(fileName, data):
 
     with open(fileName, 'w') as f:
         try:
-            print(data)
-            print(fileName)
             json.dump(data, f, indent=4)
         except Exception as e:
             print(e)
