@@ -4,8 +4,9 @@ import os
 import shutil
 from pprint import pprint
 
-import jsonUtilities
-import bepipe.core.utility.path as path
+import bepipe.core.path as path
+from .import _jsonutils
+
 
 _ASSET_TREE = "resources/asset_tree.json"
 
@@ -84,7 +85,7 @@ def _getTemplateDirectories():
 
     baseDirectory = os.path.dirname(__file__)
     templateFile = os.path.join(baseDirectory, _ASSET_TREE)
-    templateData = jsonUtilities.readJsonFile(templateFile)
+    templateData = _jsonutils.readJsonFile(templateFile)
     tempDirs = [i for i in templateData if i.get("Type") == "Directory"]
     return tempDirs
 
@@ -133,11 +134,11 @@ def writeAssetToFile(projectFile, asset):
     """
 
     try:
-        projectData = jsonUtilities.readJsonFile(projectFile)
+        projectData = _jsonutils.readJsonFile(projectFile)
     except FileNotFoundError:
         projectData=[]
 
     # TODO what if there aren't any assets?
     
     projectData[1].get('ASSETS').append(asset)
-    return jsonUtilities.writeJson(projectFile, projectData)
+    return _jsonutils.writeJson(projectFile, projectData)

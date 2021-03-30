@@ -1,92 +1,62 @@
 import os
 import sys
 import enum
-from collections import OrderedDict
+
+import bepipe.core.qt.style as style
+import bepipe.core.qt.widgets as bepWidgets
 
 from PySide2 import QtWidgets, QtCore, QtGui
 
-import bepipe.core.qt.style as style
-from bepipe.core.qt.bepMessageBox import bepMessageBox
-from bepipe.core.qt.bepListWidgetItem import BepListWidgetItem
-from bepipe.core.qt.collapsableGroupBox import CollapsableGroupBox
-
-# TODO think of some sort of setting system
-# TODO icon factory
-# TODO _constants module
+from ..utility import _constants
 
 
-_FILE_DIRECTORY = os.path.join(os.path.dirname(__file__))
-_WINDOW_ICON = os.path.join(_FILE_DIRECTORY, "resources/icons/icon_CAT.png")
-_MENU_ICONS = {
-    'disk': os.path.join(_FILE_DIRECTORY, "resources/icons/disk.png"),
-    'modify': os.path.join(_FILE_DIRECTORY, "resources/icons/modify.png"),
-    'rename': os.path.join(_FILE_DIRECTORY, "resources/icons/rename.png"),
-    'delete': os.path.join(_FILE_DIRECTORY, "resources/icons/delete.png")
-}
 _SPACER = QtWidgets.QSpacerItem(0, 10)
-_ELEMENTS = ["Animation", "Lighting", "Maps", "Mesh", "Output", "Reference", "Rig", "Sculpt"]
-
-ASSET_ICONS = {
-    'char': os.path.join(_FILE_DIRECTORY, 'resources/icons/char.png'),
-    'environment': os.path.join(_FILE_DIRECTORY, 'resources/icons/environment.png'),
-    'prop': os.path.join(_FILE_DIRECTORY, 'resources/icons/prop.png'),
-    'vfx': os.path.join(_FILE_DIRECTORY, 'resources/icons/vfx.png')
-}
-
-ASSET_TYPES = ['char', 'environment', 'prop', 'vfx']
-
-NO_PROJECT = "Open a project or create a new one."
-
-# TODO get starter files for different projects
-
-
-class Mode(enum.Enum):
-    Create = 1
-    Edit = 2
 
 
 class CATWindow(QtWidgets.QMainWindow):
-    """ Main window wrapper for CAT
+    """ Main window wraper for CAT
     """
-
-    close = QtCore.Signal()
 
     def __init__(self):
         super(CATWindow, self).__init__()
 
-        self.icon = QtGui.QIcon(_WINDOW_ICON)
-        self.project = None
+        self.icon = QtGui.QIcon(_constants.WINDOW_ICON)
+
         self.selectedAsset = None
         self.elements = []
 
+        # UI inits
+        self.newProject = None
+        self.openProject = None
+        self.createAsset = None
+
         self._setupUi()
-        self._connectSignals()
 
     def _setupUi(self):
-        """ UI Initialization
+        """ UI initialization
         """
 
+        # top menu
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&File")
         createMenu = menuBar.addMenu("&Create")
         prefsMenu = menuBar.addMenu("&Preferences")
         helpMenu = menuBar.addMenu("&Help")
-        self.statusBar()
 
-        # Menu actions
-        self.newProjectAction = QtWidgets.QAction('New Project', self)
-        fileMenu.addAction(self.newProjectAction)
-        self.openProjectAction = QtWidgets.QAction('Open Project', self)
-        fileMenu.addAction(self.openProjectAction)
+        # menu actions
+        self.newProject = QtWidgets.QAction('New Project', self)
+        fileMenu.addAction(self.newProject)
+        self.openProject = QtWidgets.QAction('Open Project', self)
+        fileMenu.addAction(self.openProject)
 
         # create an asset, show create menu
-        self.createNewAssetAction = QtWidgets.QAction('Create New Asset', self)
-        createMenu.addAction(self.createNewAssetAction)
+        self.createNewAsset = QtWidgets.QAction('Create New Asset', self)
+        createMenu.addAction(self.createNewAsset)
 
         # prefs
-        self.usingP4 = QtWidgets.QAction('Use Perforce', self)
-        self.usingP4.setCheckable(True)
-        prefsMenu.addAction(self.usingP4)
+        #self.usingP4 = QtWidgets.QAction('Use Perforce', self)
+        #self.usingP4.setCheckable(True)
+        #prefsMenu.addAction(self.usingP4)
 
         # help
         self.docs = QtWidgets.QAction('Read the Docs', self)
@@ -94,19 +64,19 @@ class CATWindow(QtWidgets.QMainWindow):
 
         # context menu, logic below
         self.openOnDisk = QtWidgets.QAction("Open on Disk")
-        self.openOnDisk.setIcon(QtGui.QIcon(_MENU_ICONS.get("disk")))
+        self.openOnDisk.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("disk")))
         self.modifyElements = QtWidgets.QAction("Modify Elements")
-        self.modifyElements.setIcon(QtGui.QIcon(_MENU_ICONS.get("modify")))
+        self.modifyElements.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("modify")))
         self.rename = QtWidgets.QAction("Rename Asset") # more involved than you think
-        self.rename.setIcon(QtGui.QIcon(_MENU_ICONS.get("rename")))
+        self.rename.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("rename")))
         self.delete = QtWidgets.QAction("Delete Asset")
-        self.delete.setIcon(QtGui.QIcon(_MENU_ICONS.get("delete")))
+        self.delete.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("delete")))
 
         # project info
         projectLabel = QtWidgets.QLabel("Current Project: ")
         self.projectLineEdit = QtWidgets.QLineEdit()
         self.projectLineEdit.setReadOnly(True)
-        self.projectLineEdit.setText(NO_PROJECT)
+        self.projectLineEdit.setText(_constants.NO_PROJECT)
         self.projectLineEdit.setStyleSheet(style.GRAY_TEXT)
         self.projectLineEdit.setStatusTip("Use 'File' > 'New' to create a new project or 'File' > 'Open' to open")
         projectTitleLayout = QtWidgets.QHBoxLayout()
@@ -126,8 +96,8 @@ class CATWindow(QtWidgets.QMainWindow):
         assetLayout.addWidget(self.assetList)
         self.assetGroup.setLayout(assetLayout)
 
-        self.assetInfoGroup = CollapsableGroupBox("Asset Info: ", func=self.resizeWindow)
-
+        self.assetInfoGroup = bepWidgets.CollapsableGroupBox("Asset Info: ", func=self.resizeWindow)
+        
         # Init with no aset
         self.assetInfoLayout = QtWidgets.QVBoxLayout()
 
@@ -168,25 +138,14 @@ class CATWindow(QtWidgets.QMainWindow):
         self.setFixedWidth(400)
         self.setFixedHeight(450)
 
-        self.mode = Mode.Create
         self.assetInfoGroup.toggleGroup()
 
-        self.show()
-
+    # move to core
     def _connectSignals(self):
         self.assetList.customContextMenuRequested.connect(self.assetContextMenu)
 
-    def _customElementReadOnly(self):
-        if self.customElement.isChecked():
-            self.customElementLineEdit.setReadOnly(False)
-            self.customElementLineEdit.setStyleSheet(style.WHITE_TEXT)
-            self.customElementLabel.setStyleSheet(style.WHITE_TEXT)
-        else:
-            self.customElementLineEdit.setReadOnly(True)
-            self.customElementLineEdit.setStyleSheet(style.GRAY_TEXT)
-            self.customElementLabel.setStyleSheet(style.GRAY_TEXT)
-
-    def assetContextMenu(self, point):
+    # move to core
+    def _assetContextMenu(self, point):
         """ Context menu actions for created assets
         """
 
@@ -202,80 +161,53 @@ class CATWindow(QtWidgets.QMainWindow):
         menu.addAction(self.delete)
         menu.exec_(self.assetList.mapToGlobal(point))
 
-    def createAssetWindow(self, func):
-        """ Dialog for creating a new asset
+    def resizeWindow(self):
+        """ Resize window if asset twirl down is selected
         """
+        # TODO This all needs reworked
+        if self.assetInfoGroup.isChecked():
+            self.setFixedHeight(700)
+        else:
+            self.setFixedHeight(450)
 
-        # TODO force on top
 
-        if not self.project:
-            bepMessageBox('Project Not Found!', 'Open or create a new project to create assets.')
-            return None
+class CreateAssetWindow(QtWidgets.QDialog):
+    """ UI to creat a new asset
+    """
+    def __init__(self):
+        super(CreateAssetWindow, self).__init__()
+        self.elements = None
+        self._setupUi()
 
-        createAssetMenu = QtWidgets.QDialog()
-        createAssetMenu.setWindowTitle("Create a New Asset")
-        createAssetMenu.setWindowIcon(QtGui.QIcon(_WINDOW_ICON))
+    def _setupUi(self):
+
+        self.setWindowTitle("Create a New Asset")
+        self.setWindowIcon(QtGui.QIcon(_constants.WINDOW_ICON))
+
         mainLayout = QtWidgets.QVBoxLayout()
 
         newAssetLabel = QtWidgets.QLabel("Asset Name: ")
-        newAssetLineEdit = QtWidgets.QLineEdit()
+        self.newAssetLineEdit = QtWidgets.QLineEdit()
         newAssetLayout = QtWidgets.QHBoxLayout()
         newAssetLayout.addWidget(newAssetLabel)
-        newAssetLayout.addWidget(newAssetLineEdit)
+        newAssetLayout.addWidget(self.newAssetLineEdit)
         newAssetLayout.addItem(_SPACER)
 
         assetTypeLabel = QtWidgets.QLabel("Asset type: ")
-        assetTypeDropDown = QtWidgets.QComboBox()
+        self.assetTypeDropDown = QtWidgets.QComboBox()
 
-        for type in ASSET_TYPES:
-            assetTypeDropDown.addItem(QtGui.QIcon(ASSET_ICONS.get(type)), type)
+        for type in _constants.ASSET_TYPES:
+            self.assetTypeDropDown.addItem(QtGui.QIcon(_constants.ASSET_ICONS.get(type)), type)
         assetTypeLayout = QtWidgets.QHBoxLayout()
         assetTypeLayout.addWidget(assetTypeLabel)
-        assetTypeLayout.addWidget(assetTypeDropDown)
+        assetTypeLayout.addWidget(self.assetTypeDropDown)
         assetTypeLayout.addItem(_SPACER)
-
-        elementLayout = self.createElementsWidget()
-        elementLayout.addItem(_SPACER)
-
-        for element in self.elements:
-            elementLayout.addWidget(element)
-
-        btnCreate = QtWidgets.QPushButton("Create Asset")
-        btnCreate.setEnabled(False)
-        # TODO button test size
-        btnCreate.setStyleSheet(style.GRAY_TEXT)
-        btnCreate.setFixedHeight(40)
-        # TODO create button connect to func
-
-        # self.createAssetGroup = CollapsableGroupBox("Create New Asset", func=self.resizeWindow)
-        createAssetGroup = QtWidgets.QGroupBox("Create New Asset: ")
-        createAssetLayout = QtWidgets.QVBoxLayout()
-        createAssetLayout.addLayout(newAssetLayout)
-        createAssetLayout.addLayout(assetTypeLayout)
-        createAssetLayout.addLayout(elementLayout)
-        createAssetLayout.addWidget(btnCreate)
-
-        createAssetGroup.setLayout(createAssetLayout)
-        mainLayout.addWidget(createAssetGroup)
-
-        # TODO return create menu to member var?
-        createAssetMenu.setLayout(mainLayout)
-        createAssetMenu.setFixedWidth(300)
-        return createAssetMenu
-        # TODO pack this data into a dict and return on create button pushed
-
-    def closeEvent(self, event):
-        # connect close signal
-        self.close.emit()
-        event.accept()
-
-    def createElementsWidget(self):
 
         elementLayout = QtWidgets.QVBoxLayout()
         elementLabel = QtWidgets.QLabel("Choose asset elements:")
         elementLayout.addWidget(elementLabel)
 
-        for element in _ELEMENTS:
+        for element in _constants.ELEMENTS:
             checkBox = QtWidgets.QCheckBox(element)
             checkBox.setChecked(True)
             checkBox.setStatusTip("Create a {} folder relative to the project.".format(element))
@@ -283,7 +215,6 @@ class CATWindow(QtWidgets.QMainWindow):
             elementLayout.addWidget(checkBox)
 
         self.customElement = QtWidgets.QCheckBox("custom element")
-        # self.customElement.stateChanged.connect(self._customElementReadOnly)
         self.customElement.setChecked(False)
         customElementLayout = QtWidgets.QHBoxLayout()
         self.customElementLabel = QtWidgets.QLabel("Element name: ")
@@ -294,17 +225,47 @@ class CATWindow(QtWidgets.QMainWindow):
         customElementLayout.addWidget(self.customElementLineEdit)
         elementLayout.addWidget(self.customElement)
         elementLayout.addLayout(customElementLayout)
+        elementLayout.addItem(_SPACER)
 
-        # init the custom box
-        # self._customElementReadOnly()
+        for element in self.elements:
+            elementLayout.addWidget(element)
 
-        return elementLayout
+        # TODO connect button in core
+        self.btnCreate = QtWidgets.QPushButton("Create Asset")
+        self.btnCreate.setEnabled(False)
 
-    def resizeWindow(self):
-        """ Resize window if asset twirl down is selected
-        """
-        # TODO This all needs reworked
-        if self.assetInfoGroup.isChecked():
-            self.setFixedHeight(700)
+        self.btnCreate.setStyleSheet(style.GRAY_TEXT)
+        self.btnCreate.setFixedHeight(40)
+
+        createAssetGroup = QtWidgets.QGroupBox("Create New Asset: ")
+        createAssetLayout = QtWidgets.QVBoxLayout()
+        createAssetLayout.addLayout(newAssetLayout)
+        createAssetLayout.addLayout(assetTypeLayout)
+        createAssetLayout.addLayout(elementLayout)
+        createAssetLayout.addWidget(self.btnCreate)
+
+        createAssetGroup.setLayout(createAssetLayout)
+        mainLayout.addWidget(createAssetGroup)
+
+        self.setLayout(mainLayout)
+        self.setFixedWidth(300)
+
+    def _connectSignals(self):
+        self.newAssetLineEdit.textChanged.connect(self._enableCreateButton)
+        self.customElement.stateChanged.connect(self._enableCustomElement)
+
+    def _enableCustomElement(self):
+        if self.customElement.isChecked():
+            self.customElementLineEdit.setReadOnly(False)
+            self.customElementLineEdit.setStyleSheet(style.WHITE_TEXT)
+            self.customElementLabel.setStyleSheet(style.WHITE_TEXT)
         else:
-            self.setFixedHeight(450)
+            self.customElementLineEdit.setReadOnly(True)
+            self.customElementLineEdit.setStyleSheet(style.GRAY_TEXT)
+            self.customElementLabel.setStyleSheet(style.GRAY_TEXT)
+
+    def _enableCreateButton(self):
+        if len(self.newAssetLineEdit.text()) > 3:
+            self.btnCreate.setEnabled(True)
+        else:
+            self.btnCreate.setEnabled(False)

@@ -1,0 +1,18 @@
+{
+  "project" :{
+  "name": "name",
+  "path": "path"
+  },
+
+  "assets":[{
+      "asset": "asset_name",
+      "path": "asset_path",
+      "anim": "",
+      "maps": "",
+      "mesh": "",
+      "output": "",
+      "ref": "",
+      "rig": "",
+      "sculpt": ""
+    }]
+}

@@ -3,7 +3,7 @@
 import os
 from pprint import pprint
 
-import jsonUtilities
+from .import _jsonutils
 
 def createProject(projectPath, projectName):
     """ Create a project json file
@@ -25,7 +25,7 @@ def createProject(projectPath, projectName):
         }
     ]
 
-    return jsonUtilities.writeJson(projectPath, projectDict)
+    return _jsonutils.writeJson(projectPath, projectDict)
 
 def getProjectAssets(projectFile):
     """ Get all entries in the project file
@@ -38,7 +38,7 @@ def getProjectAssets(projectFile):
     """
 
     try:
-        assets = jsonUtilities.readJsonFile(projectFile)[1].get("ASSETS")
+        assets = _jsonutils.readJsonFile(projectFile)[1].get("ASSETS")
     except IndexError:
         # no assets
         return None
@@ -56,11 +56,11 @@ def removeAssetEntry(projectFile, asset):
             asset (dict): psset to remove
     """
 
-    projectData = jsonUtilities.readJsonFile(projectFile)
+    projectData = _jsonutils.readJsonFile(projectFile)
     assets = projectData[1].get("ASSETS")
     modifiedAssets = [a for a in assets if a != asset]
     projectData[1]["ASSETS"] = modifiedAssets
-    jsonUtilities.writeJson(projectFile, projectData)
+    _jsonutils.writeJson(projectFile, projectData)
 
 def renameAssetEntry(newName):
     """
