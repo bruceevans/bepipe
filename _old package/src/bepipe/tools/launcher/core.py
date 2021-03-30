@@ -105,7 +105,7 @@ class BeLauncher(QtCore.QObject):
                 action = LauncherAction(tagLists[i][j].get("directory"), tagLists[i][j].get("tag"), name=tagLists[i][j].get("name"))
                 self.laucherActions.append(action)
                 actionList.append(action)
-        
+
         for i in range(len(actionList)):
             if actionList[i]:
                 # get the file type for exe/bat test
@@ -191,7 +191,7 @@ class LauncherAction(QtWidgets.QAction):
     def getApplication(appPath):
         return os.path.basename(appPath)
 
-    @property 
+    @property
     def exe(self):
         return self._exe
 
@@ -221,7 +221,7 @@ class LauncherAction(QtWidgets.QAction):
         if self._exe:
             if os.path.splitext(self._exe)[1] in self._FILE_TYPES:
                 if self._exe not in (p.name() for p in psutil.process_iter()):
-                    subprocess.Popen([self._path])
+                    subprocess.Popen([self._path], shell=True)
                 else:
                     self._message.emit("Oops! {} is already running".format(self._exe))
             else:
@@ -232,7 +232,7 @@ class LaunchApplication(QtCore.QObject):
 
     def __init__(self, parent = None):
         super(LaunchApplication, self).__init__(parent=parent)
-        
+
     def run(self, app):
         try:
             subprocess.run(app)

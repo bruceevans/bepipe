@@ -28,28 +28,39 @@ class CAT(QtCore.QObject):
     def __init__(self):
         super(CAT, self).__init__()
 
-        self.projectDirectory = None
-        self.projectPath = None
-        self.projectName = None
-
-        self.assetElements = None
-
         self._ui = ui.CATWindow()
         self._connectWidgets()
         self._ui.show()
 
+        self.projectDirectory = None
+        self.projectPath = None
+        self._ui.project = None
+        self.assetElements = None
+
     def _connectWidgets(self):
-        # self._ui.btnCreate.clicked.connect(self._createNewAsset)
+
+        #self._ui.btnCreate.clicked.connect(self._createNewAsset)
+
         self._ui.newProjectAction.triggered.connect(self._createNewProject)
         self._ui.openProjectAction.triggered.connect(self._openExistingProject)
-        self._ui.assetList.currentItemChanged.connect(self._getSelectedAssetInList)
+        self._ui.createNewAssetAction.triggered.connect(self._createAsset)
 
+        self._ui.assetList.currentItemChanged.connect(self._getSelectedAssetInList)
         self._ui.openOnDisk.triggered.connect(self._openAssetDirectory)
         # self._ui.modifyElements.triggered.connect(self._modifyAssetElements)
         self._ui.rename.triggered.connect(self._renameAsset)
         self._ui.delete.triggered.connect(self._deleteAsset)
 
+    def _createAsset(self):
+        """ Show the create asset window
+        """
+        self.createAssetMenu = self._ui.createAssetWindow()
+        if self.createAssetMenu:
+            self.createAssetMenu.show()
+
     def _createNewAsset(self):
+        """ Actually create the asset and write to file
+        """
         
         assetName = self._ui.newAssetLineEdit.text()
         assetType = self._ui.assetTypeDropDown.currentText()
@@ -89,12 +100,12 @@ class CAT(QtCore.QObject):
             return
         
         self.projectDirectory = os.path.dirname(self.projectPath)
-        self.projectName = os.path.split(self.projectPath)[1]
+        self._ui.project = os.path.split(self.projectPath)[1]
 
-        if not project.createProject(self.projectPath, self.projectName):
+        if not project.createProject(self.projectPath, self._ui.project):
             return
 
-        self._ui.projectLineEdit.setText(os.path.splitext(self.projectName)[0])
+        self._ui.projectLineEdit.setText(os.path.splitext(self._ui.project)[0])
         existingAssets = project.getProjectAssets(self.projectPath)
 
         if existingAssets:
@@ -187,8 +198,8 @@ class CAT(QtCore.QObject):
             return
 
         self.projectDirectory = os.path.dirname(self.projectPath)
-        self.projectName = os.path.splitext(os.path.basename(self.projectPath))[0]
-        self._ui.projectLineEdit.setText(self.projectName)
+        self._ui.project = os.path.splitext(os.path.basename(self.projectPath))[0]
+        self._ui.projectLineEdit.setText(self._ui.project)
         self._refresh(init=True)
 
     def _refresh(self, init=False, newAsset=None):
