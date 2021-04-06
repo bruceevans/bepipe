@@ -176,7 +176,7 @@ class CreateAssetWindow(QtWidgets.QDialog):
     """
     def __init__(self):
         super(CreateAssetWindow, self).__init__()
-        self.elements = None
+        self.elements = []
         self._setupUi()
 
     def _setupUi(self):
