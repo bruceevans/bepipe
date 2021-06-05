@@ -9,7 +9,11 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from .resources import resources
 
 
-__ALL__ = ['BepListWidgetItem', 'CollapsableGroupBox', 'bepMessageBox']
+__all__ = [
+    'BepListWidgetItem',
+    'CollapsableGroupBox',
+    'bepMessageBox'
+    ]
 
 
 _COLLAPSE_STYLE = """

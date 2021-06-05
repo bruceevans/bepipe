@@ -4,11 +4,16 @@ import json
 import psutil
 import subprocess
 
-import bepipe.core.utility.helpers as utils
-import bepipe.core.utility.extracticon as extracticon
+import bepipe.core.extracticon as extracticon
 from PySide2 import QtCore, QtGui, QtWidgets
 
-_APPLICATION_PATH = utils.getApplicationPath(__file__)
+def getApplicationPath(pyFile):
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    elif __file__:
+        return os.path.dirname(pyFile)
+
+_APPLICATION_PATH = getApplicationPath(__file__)
 _DEFAULT_TAGS = ["Art", "Code", "Games", "Game Dev", "Media", "Productivity", "Utilities", "Web", "zBeP"]
 
 

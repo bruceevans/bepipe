@@ -2,10 +2,22 @@
 import os
 from P4 import P4, P4Exception
 
+
+# TODO Perforce status icons
+
+
+def checkIn(files):
+    """ Check in new/updated files
+    """
+
 def checkOut(files):
     """ checkout workspace files
     """
     # changelist stuff TODO
+
+def getLatest():
+    """ Get the latest of the selected file and elements
+    """
 
 def createNewChangelist(p4, description):
     p4.input = description

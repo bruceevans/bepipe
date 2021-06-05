@@ -5,6 +5,7 @@
 #---------------------------------------------------------------------#
 
 import os
+import sys
 import json
 import psutil
 import ctypes
@@ -14,11 +15,16 @@ import webbrowser
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-import bepipe.core.utility.helpers as utils
-import bepipe.core.utility.extracticon as extracticon
+import bepipe.core.extracticon as extracticon
 from ui import BeLauncherUI
 
-_APPLICATION_PATH = utils.getApplicationPath(__file__)
+def getApplicationPath(pyFile):
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    elif __file__:
+        return os.path.dirname(pyFile)
+
+_APPLICATION_PATH = getApplicationPath(__file__)
 _STORED_APPS = _APPLICATION_PATH + "\\resources\\apps.json"
 _MODULE_PATH = _APPLICATION_PATH.split('launcher')[0]
 _CAT = "{}\\cat\\resources\\runCat.bat".format(_MODULE_PATH)
@@ -235,6 +241,6 @@ class LaunchApplication(QtCore.QObject):
 
     def run(self, app):
         try:
-            subprocess.run(app)
+            subprocess.run(app, shell=True)
         except BaseException as e:
             print(e)

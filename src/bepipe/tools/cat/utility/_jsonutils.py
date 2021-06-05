@@ -45,8 +45,8 @@ def writeJson(fileName, data):
     """General write to json file helper
 
         args:
-            data (dict): Dict elements to write
             fileName (str): Name of the json file
+            data (dict): Dict elements to write
 
         returns;
             bool
@@ -77,4 +77,3 @@ def writeToExistingJson(jsonFile, newData):
         data=json.load(readFile)
         data.append(newData)
         return writeJson(data, jsonFile)
-    
