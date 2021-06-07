@@ -11,6 +11,7 @@ import bepipe.core.qt.widgets as widgets
 from . utility import _project
 from . utility import _constants
 from . import _assetTree
+from . import _elementWidget
 
 
 _SPACER = QtWidgets.QSpacerItem(0, 10)
@@ -89,77 +90,76 @@ class CATWindow(QtWidgets.QMainWindow):
 
 
 
-        # Asset Info Area #
 
-        # TODO class this out
+        mainElementGroup = QtWidgets.QGroupBox("Elements")
+        
+        elementInfoLayout = QtWidgets.QHBoxLayout()
 
-        mainAssetInfoLayout = QtWidgets.QVBoxLayout()
+        listLayout = QtWidgets.QVBoxLayout()
+        elementGroup = QtWidgets.QGroupBox("")
+        elementList = QtWidgets.QListView()
+        listLayout.addWidget(elementList)
+        elementGroup.setLayout(listLayout)
 
-        self.assetInfoGroup = QtWidgets.QGroupBox("Asset Status")
-        self.perforceGroup = QtWidgets.QGroupBox("Perforce Tools")
+        btnGetLatest = QtWidgets.QPushButton("Get Latest")
+        btnGetLatest.setFixedHeight(40)
+        btnCheckOut = QtWidgets.QPushButton("Check Out")
+        btnCheckOut.setFixedHeight(40)
+        btnCheckIn = QtWidgets.QPushButton("Check In")
+        btnCheckIn.setFixedHeight(40)
 
-        assetInfoLayout = QtWidgets.QVBoxLayout()
+        btnLayout = QtWidgets.QHBoxLayout()
+        btnLayout.addWidget(btnGetLatest)
+        btnLayout.addWidget(btnCheckOut)
+        btnLayout.addWidget(btnCheckIn)
+        listLayout.addLayout(btnLayout)
 
-        assetStatusLayout = QtWidgets.QHBoxLayout()
-        labelLayout = QtWidgets.QVBoxLayout()
+        infoGroup = QtWidgets.QGroupBox("Status")
+        # TODO large icon
+
+        statusIconLayout = QtWidgets.QVBoxLayout()
+        self.statusIcon = QtWidgets.QLabel("")
+        self.statusIcon.setPixmap(_constants.P4_ICONS.get("LOCAL_UP_TO_DATE"))
+        self.statusIcon.setAlignment(QtCore.Qt.AlignCenter)
+        statusIconLayout.addWidget(self.statusIcon)
+        statusIconLayout.maximumSize()
+
+        infoLayout = QtWidgets.QHBoxLayout()
+        titleLayout = QtWidgets.QVBoxLayout()
         statusLayout = QtWidgets.QVBoxLayout()
 
-        buttonLayout = QtWidgets.QVBoxLayout()
+        statusIconLayout.addLayout(infoLayout, stretch=1)
+        statusIconLayout.addSpacerItem(_SPACER)
 
         versionLabel = QtWidgets.QLabel("Version: ")
         versionLabel.setAlignment(QtCore.Qt.AlignLeft)
         self.version = QtWidgets.QLabel("V00")
         self.version.setAlignment(QtCore.Qt.AlignLeft)
-        labelLayout.addWidget(versionLabel)
+        titleLayout.addWidget(versionLabel)
         statusLayout.addWidget(self.version)
 
         userLabel = QtWidgets.QLabel("User: ")
         userLabel.setAlignment(QtCore.Qt.AlignLeft)
         self.user = QtWidgets.QLabel("Bevans")
         self.user.setAlignment(QtCore.Qt.AlignLeft)
-        labelLayout.addWidget(userLabel)
+        titleLayout.addWidget(userLabel)
         statusLayout.addWidget(self.user)
 
         dateLabel = QtWidgets.QLabel("Date: ")
         dateLabel.setAlignment(QtCore.Qt.AlignLeft)
         self.date = QtWidgets.QLabel("00/00/0000")
         self.date.setAlignment(QtCore.Qt.AlignLeft)
-        labelLayout.addWidget(dateLabel)
+        titleLayout.addWidget(dateLabel)
         statusLayout.addWidget(self.date)
 
-        commentLabel = QtWidgets.QLabel("Comment: ")
-        commentLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.comment = QtWidgets.QLabel("This is a really long publish comment")
-        self.comment.setWordWrap(True)
-        self.comment.setAlignment(QtCore.Qt.AlignLeft)
-        labelLayout.addWidget(commentLabel)
-        statusLayout.addWidget(self.comment)
+        infoLayout.addLayout(titleLayout)
+        infoLayout.addLayout(statusLayout)
+        infoGroup.setLayout(statusIconLayout)
 
-        assetStatusLayout.addLayout(labelLayout)
-        assetStatusLayout.addLayout(statusLayout)
-        assetInfoLayout.addLayout(assetStatusLayout)
+        elementInfoLayout.addWidget(elementGroup)
+        elementInfoLayout.addWidget(infoGroup)
 
-        self.assetInfoGroup.setLayout(assetInfoLayout)
-
-        # TODO icon only
-        self.getLatestButton = QtWidgets.QPushButton("Get Latest")
-        self.getLatestButton.setFixedHeight(40)
-        self.checkOutButton = QtWidgets.QPushButton("Check Out")
-        self.checkOutButton.setFixedHeight(40)
-        self.checkInButton = QtWidgets.QPushButton("Check In")
-        self.checkInButton.setFixedHeight(40)
-        buttonLayout.addWidget(self.getLatestButton)
-        buttonLayout.addWidget(self.checkOutButton)
-        buttonLayout.addWidget(self.checkInButton)
-
-        self.perforceGroup.setLayout(buttonLayout)
-
-        mainAssetInfoLayout.addWidget(self.assetInfoGroup)
-        mainAssetInfoLayout.addWidget(self.perforceGroup)
-
-        assetArea = QtWidgets.QHBoxLayout()
-        assetArea.addWidget(self.assetGroup)
-        assetArea.addLayout(mainAssetInfoLayout)
+        mainElementGroup.setLayout(elementInfoLayout)
 
 
 
@@ -168,7 +168,8 @@ class CATWindow(QtWidgets.QMainWindow):
         self.mainLayout.addItem(_SPACER)
         self.mainLayout.addLayout(projectTitleLayout)
         self.mainLayout.addItem(_SPACER)
-        self.mainLayout.addLayout(assetArea)
+        self.mainLayout.addWidget(self.assetGroup)
+        self.mainLayout.addWidget(mainElementGroup)
 
         centralWidget = QtWidgets.QWidget()
         centralWidget.setLayout(self.mainLayout)
