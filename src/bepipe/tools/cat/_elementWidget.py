@@ -1,6 +1,9 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from . utility import _constants
+from . dialog import _simpleTreeView
+
 class ElementWidget(QtWidgets.QWidget):
     """ Widget containing an element list and
     info about the file status from perforce
@@ -9,48 +12,98 @@ class ElementWidget(QtWidgets.QWidget):
     # TODO use the list view's on selected signal
 
     def __init__(self, parent=None):
-        super(ElementWidget, self).__init__(parent)
+        QtWidgets.QWidget.__init__(self, parent=parent)
 
-        mainLayout = QtWidgets.QHBoxLayout()
+        self.setFixedHeight(100)
+        self.layout = None
 
-        elementLayout = QtWidgets.QVBoxLayout()
+        # self.selectedElement = None
+
+        # temp for formatting currently
+        self.assetName = "ASSET"
+        self.perforceStatus = ""
+        self.elementName = "Element"
+        self.createdBy = "Bevans"
+        self.createdDate = "00/00/00"
+        self.updatedBy = "Bevans"
+        self.updatedDate = "00/00/00"
+
+        self._setupUi()
+        self.setFixedHeight(200)
+
+        # self.setEnabled(False)
+
+    def _setupUi(self):
+
+        # Text status info #
+
+        self.layout = QtWidgets.QHBoxLayout()
+        self.thumbnail = QtGui.QPixmap(_constants.CAT_THUMBNAIL)
+        self.thumbnailLabel = QtWidgets.QLabel("")
+        self.thumbnailLabel.setPixmap(self.thumbnail)
+
+        self.nameLabel = QtWidgets.QLabel(self.assetName)  # BIG
+        self.nameLabel.setFont(QtGui.QFont('Calibri', 12, QtGui.QFont.Bold))
+
+        self.elementLabel = QtWidgets.QLabel(self.elementName)  # big
+        self.elementLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
+
+        self.createdByLabel = QtWidgets.QLabel("Created By: {}".format(self.createdBy))  # small
+        self.createDateLabel = QtWidgets.QLabel("Created On: {}".format(self.createdDate))
+
+        self.updatedByLabel = QtWidgets.QLabel("Last Updated By: {}".format(self.updatedBy))
+        self.updatedLabel = QtWidgets.QLabel("Last Updated On: {}".format(self.updatedDate))
+
+        textStatus = QtWidgets.QVBoxLayout()
+        textStatus.addWidget(self.nameLabel)
+        textStatus.addWidget(self.elementLabel)
+
+        textStatus.addWidget(self.updatedByLabel)
+        textStatus.addWidget(self.updatedLabel)
+
+        textStatus.addWidget(self.createdByLabel)
+        textStatus.addWidget(self.createDateLabel)
+
+        # self.layout.addLayout(textStatus, stretch=0)
+
+        elementListLayout = QtWidgets.QVBoxLayout()
         elementGroup = QtWidgets.QGroupBox("Elements")
-        elementList = QtWidgets.QListView()
-        elementLayout.addWidget(elementList)
-        elementGroup.setLayout(elementLayout)
+        # elementList = QtWidgets.QListView()
+        self.elementTree = ElementTree()
+        elementListLayout.addWidget(self.elementTree)
+        elementGroup.setLayout(elementListLayout)
 
-        infoGroup = QtWidgets.QGroupBox("Status")
-        # TODO large icon
-        infoLayout = QtWidgets.QHBoxLayout()
-        titleLayout = QtWidgets.QVBoxLayout()
-        statusLayout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(elementGroup)
 
-        versionLabel = QtWidgets.QLabel("Version: ")
-        versionLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.version = QtWidgets.QLabel("V00")
-        self.version.setAlignment(QtCore.Qt.AlignLeft)
-        titleLayout.addWidget(versionLabel)
-        statusLayout.addWidget(self.version)
+        statusGroup = QtWidgets.QGroupBox("Element Status")
+        statusGroupLayout = QtWidgets.QHBoxLayout()
+        statusGroupLayout.addLayout(textStatus)
+        statusGroupLayout.addWidget(self.thumbnailLabel)
+        statusGroup.setLayout(statusGroupLayout)
 
-        userLabel = QtWidgets.QLabel("User: ")
-        userLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.user = QtWidgets.QLabel("Bevans")
-        self.user.setAlignment(QtCore.Qt.AlignLeft)
-        titleLayout.addWidget(userLabel)
-        statusLayout.addWidget(self.user)
+        # self.layout.addLayout(textStatus, stretch=0)
+        # self.layout.addWidget(self.thumbnailLabel)
+        self.layout.addWidget(statusGroup)
 
-        dateLabel = QtWidgets.QLabel("Date: ")
-        dateLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.date = QtWidgets.QLabel("00/00/0000")
-        self.date.setAlignment(QtCore.Qt.AlignLeft)
-        titleLayout.addWidget(dateLabel)
-        statusLayout.addWidget(self.date)
+        self.setLayout(self.layout)
 
-        infoLayout.addLayout(titleLayout)
-        infoLayout.addLayout(statusLayout)
-        infoGroup.setLayout(infoLayout)
+    # connect
 
-        mainLayout.addWidget(elementGroup)
-        mainLayout.addWidget(infoGroup)
+    # refresh
 
-        # hor layout contain listview and info group
+
+class ElementTree(_simpleTreeView.SimpleTree):
+
+    ELEMENT, STATUS = range(2)
+
+    def __init__(self):
+        super(ElementTree, self).__init__("Elements", "Status")
+
+    def addElementToTree(self, element, status, path):
+
+        elementColumn = QtGui.QStandardItem(element)
+        # TODO set data as the path
+        statusColumn = QtGui.QStandardItem("")
+        statusColumn.setIcon(QtGui.QIcon(_constants.P4_ICONS.get(status)))
+
+        self.model.appendRow([elementColumn, statusColumn])

@@ -17,8 +17,8 @@ ELEMENTS = [
     "lighting",
     "maps",
     "mesh",
-    "render",
     "reference",
+    "render",
     "rig",
     "sculpt"
     ]
@@ -56,6 +56,8 @@ P4_TOOLTIPS = {
     'CHECKED_OUT': "Asset is checked out"
 }
 
-WINDOW_ICON = os.path.join(FILE_DIRECTORY, "resources/icons/icon_CAT.png")
+CAT_THUMBNAIL = os.path.join(FILE_DIRECTORY, 'resources/thumbnails/thumbnail_CAT.png')
+
+WINDOW_ICON = os.path.join(FILE_DIRECTORY, 'resources/icons/icon_CAT.png')
 
 NO_PROJECT = "Open a project or create a new one."

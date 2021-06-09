@@ -26,6 +26,9 @@ class CATWindow(QtWidgets.QMainWindow):
 
         self.icon = QtGui.QIcon(_constants.WINDOW_ICON)
 
+        self.selectedAsset = None
+        self.selectedElement = None
+
         self._setupUi()
         self._connectWidgets()
 
@@ -88,88 +91,37 @@ class CATWindow(QtWidgets.QMainWindow):
         assetLayout.addWidget(self.assetTree)
         self.assetGroup.setLayout(assetLayout)
 
+        self.elementWidget = _elementWidget.ElementWidget()
+        self.elementWidget.show()
 
+        versionLayout = QtWidgets.QHBoxLayout()
+        self.versionDropDown = QtWidgets.QComboBox()
+        self.versionDropDown.setFixedHeight(30)
+        self.historyButton = QtWidgets.QPushButton("View History")
+        self.historyButton.setFixedHeight(30)
+        versionLayout.addWidget(self.versionDropDown)
+        versionLayout.addWidget(self.historyButton)
 
-
-        mainElementGroup = QtWidgets.QGroupBox("Elements")
-        
-        elementInfoLayout = QtWidgets.QHBoxLayout()
-
-        listLayout = QtWidgets.QVBoxLayout()
-        elementGroup = QtWidgets.QGroupBox("")
-        elementList = QtWidgets.QListView()
-        listLayout.addWidget(elementList)
-        elementGroup.setLayout(listLayout)
-
-        btnGetLatest = QtWidgets.QPushButton("Get Latest")
-        btnGetLatest.setFixedHeight(40)
-        btnCheckOut = QtWidgets.QPushButton("Check Out")
-        btnCheckOut.setFixedHeight(40)
-        btnCheckIn = QtWidgets.QPushButton("Check In")
-        btnCheckIn.setFixedHeight(40)
-
-        btnLayout = QtWidgets.QHBoxLayout()
-        btnLayout.addWidget(btnGetLatest)
-        btnLayout.addWidget(btnCheckOut)
-        btnLayout.addWidget(btnCheckIn)
-        listLayout.addLayout(btnLayout)
-
-        infoGroup = QtWidgets.QGroupBox("Status")
-        # TODO large icon
-
-        statusIconLayout = QtWidgets.QVBoxLayout()
-        self.statusIcon = QtWidgets.QLabel("")
-        self.statusIcon.setPixmap(_constants.P4_ICONS.get("LOCAL_UP_TO_DATE"))
-        self.statusIcon.setAlignment(QtCore.Qt.AlignCenter)
-        statusIconLayout.addWidget(self.statusIcon)
-        statusIconLayout.maximumSize()
-
-        infoLayout = QtWidgets.QHBoxLayout()
-        titleLayout = QtWidgets.QVBoxLayout()
-        statusLayout = QtWidgets.QVBoxLayout()
-
-        statusIconLayout.addLayout(infoLayout, stretch=1)
-        statusIconLayout.addSpacerItem(_SPACER)
-
-        versionLabel = QtWidgets.QLabel("Version: ")
-        versionLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.version = QtWidgets.QLabel("V00")
-        self.version.setAlignment(QtCore.Qt.AlignLeft)
-        titleLayout.addWidget(versionLabel)
-        statusLayout.addWidget(self.version)
-
-        userLabel = QtWidgets.QLabel("User: ")
-        userLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.user = QtWidgets.QLabel("Bevans")
-        self.user.setAlignment(QtCore.Qt.AlignLeft)
-        titleLayout.addWidget(userLabel)
-        statusLayout.addWidget(self.user)
-
-        dateLabel = QtWidgets.QLabel("Date: ")
-        dateLabel.setAlignment(QtCore.Qt.AlignLeft)
-        self.date = QtWidgets.QLabel("00/00/0000")
-        self.date.setAlignment(QtCore.Qt.AlignLeft)
-        titleLayout.addWidget(dateLabel)
-        statusLayout.addWidget(self.date)
-
-        infoLayout.addLayout(titleLayout)
-        infoLayout.addLayout(statusLayout)
-        infoGroup.setLayout(statusIconLayout)
-
-        elementInfoLayout.addWidget(elementGroup)
-        elementInfoLayout.addWidget(infoGroup)
-
-        mainElementGroup.setLayout(elementInfoLayout)
-
-
-
+        perforceButtonLayout = QtWidgets.QHBoxLayout()
+        self.getLatestButton = QtWidgets.QPushButton("Get Latest Element")
+        # TODO tooltips
+        self.getLatestButton.setFixedHeight(40)
+        perforceButtonLayout.addWidget(self.getLatestButton)
+        self.checkOutButton = QtWidgets.QPushButton("Check Out Element")
+        self.checkOutButton.setFixedHeight(40)
+        perforceButtonLayout.addWidget(self.checkOutButton)
+        self.checkInButton = QtWidgets.QPushButton("Check In Element")
+        self.checkInButton.setFixedHeight(40)
+        perforceButtonLayout.addWidget(self.checkInButton)
 
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.mainLayout.addItem(_SPACER)
         self.mainLayout.addLayout(projectTitleLayout)
         self.mainLayout.addItem(_SPACER)
         self.mainLayout.addWidget(self.assetGroup)
-        self.mainLayout.addWidget(mainElementGroup)
+        self.mainLayout.addWidget(self.elementWidget)
+        self.mainLayout.addLayout(versionLayout)
+        self.mainLayout.addLayout(perforceButtonLayout)
 
         centralWidget = QtWidgets.QWidget()
         centralWidget.setLayout(self.mainLayout)
@@ -178,7 +130,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("CAT by Be")
         self.setWindowIcon(self.icon)
         self.setMinimumWidth(600)
-        self.setMinimumHeight(400)
+        self.setMinimumHeight(800)
 
     def _connectWidgets(self):
         """ Connect slots and signals
@@ -192,6 +144,7 @@ class CATWindow(QtWidgets.QMainWindow):
         # viewConnection
         # readDocs
         self.assetTree.customContextMenuRequested.connect(self._contextMenu)
+        self.assetTree.clicked.connect(self._onAssetChanged)
 
     ##### UI Functions #####
 
@@ -200,8 +153,9 @@ class CATWindow(QtWidgets.QMainWindow):
         """
 
         # make this a parameter?
-        asset = self.assetTree.indexAt(point)
-        if not asset:
+        asset = self.assetTree.indexAt(point)  # gives a qmodelindex (-1, -1), (0, 1), etc.
+
+        if asset.column() == -1 or asset.row() == -1:
             return
         
         # TODO lambdas to tie things together
@@ -224,7 +178,6 @@ class CATWindow(QtWidgets.QMainWindow):
         menu.addAction(deleteAsset)
         
         menu.exec_(self.assetTree.mapToGlobal(point))
-
 
     def _createNewProject(self):
             """ Create a standard project (directory file and json),
@@ -251,6 +204,22 @@ class CATWindow(QtWidgets.QMainWindow):
 
             if existingAssets:
                 self._refresh(existingAssets)
+
+    def _onAssetChanged(self, index):
+        """ Logic to run when the user clicks a new asset in the main asset tree view """
+
+        # clear the element view
+        self.elementWidget.elementTree.model.removeRows(
+            0, self.elementWidget.elementTree.model.rowCount())
+
+        asset = self.assetTree.model.item(index.row(), 0).data()
+        assetPath = asset.get("PATH")
+        elements = asset.get("ELEMENTS")
+        for element in elements:
+            # add a new row in the elements tree
+            # TODO p4 status
+            elementPath = os.path.join(assetPath, element.lower())
+            self.elementWidget.elementTree.addElementToTree(element, "LOCAL_UP_TO_DATE", elementPath)
 
     def _openExistingProject(self):
         """ Open an existing json project
@@ -284,12 +253,13 @@ class CATWindow(QtWidgets.QMainWindow):
 
         if init and existingAssets:
             # opening a new project
+            # can't clear because that kills the columns
             self.assetTree.model.removeRows(0, self.assetTree.model.rowCount())
             for asset in existingAssets:
                 # TODO get perforce status
-                self.assetTree.addAssetToTree(self.assetTree.model, asset, "p4 status todo")
+                self.assetTree.addAssetToTree(self.assetTree.model, asset)
 
         if newAsset:
-            self.assetTree.addAssetToTree(self.assetTree.model, newAsset, "p4 status todo")
+            self.assetTree.addAssetToTree(self.assetTree.model, newAsset)
 
         # TODO self.assetList.sortItems()
