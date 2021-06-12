@@ -204,7 +204,10 @@ class CATWindow(QtWidgets.QMainWindow):
         
         self.projectDirectory = os.path.dirname(self.projectPath)
         self.project = os.path.split(self.projectPath)[1]
-        self._CATAPI.createProject(self.projectPath, self.project)
+        self._CAT_API.createProject(self.projectPath, self.project)
+
+        # update form
+        self.projectLineEdit.setText(os.path.splitext(self.project)[0])
 
     def _onAssetChanged(self, index):
         """ Logic to run when the user clicks a new asset in the main asset tree view """
