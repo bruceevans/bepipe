@@ -3,7 +3,8 @@
 import os
 from pprint import pprint
 
-from .import _jsonutils
+from . import _jsonutils
+from bepipe.core import bepeefour as BP4
 
 def createProject(projectPath, projectName):
     """ Create a project json file
@@ -25,7 +26,9 @@ def createProject(projectPath, projectName):
         }
     ]
 
-    return _jsonutils.writeJson(projectPath, projectDict)
+    _jsonutils.writeJson(projectPath, projectDict)
+    BP4.addNewFile(projectPath)
+    return True
 
 def getProjectAssets(projectFile):
     """ Get all entries in the project file

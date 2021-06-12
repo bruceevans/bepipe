@@ -12,6 +12,7 @@ from . utility import _project
 from . utility import _constants
 from . import _assetTree
 from . import _elementWidget
+from . import cat
 
 
 _SPACER = QtWidgets.QSpacerItem(0, 10)
@@ -28,6 +29,8 @@ class CATWindow(QtWidgets.QMainWindow):
 
         self.selectedAsset = None
         self.selectedElement = None
+
+        self._CAT_API = cat.CAT()
 
         self._setupUi()
         self._connectWidgets()
@@ -114,6 +117,10 @@ class CATWindow(QtWidgets.QMainWindow):
         self.checkInButton.setFixedHeight(40)
         perforceButtonLayout.addWidget(self.checkInButton)
 
+        self.openButtonText = "Open Element in {}".format("DCC")
+        self.openButton = QtWidgets.QPushButton(self.openButtonText)  # hide until element is selected
+        self.openButton.setFixedHeight(40)
+
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.mainLayout.addItem(_SPACER)
         self.mainLayout.addLayout(projectTitleLayout)
@@ -122,6 +129,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.mainLayout.addWidget(self.elementWidget)
         self.mainLayout.addLayout(versionLayout)
         self.mainLayout.addLayout(perforceButtonLayout)
+        self.mainLayout.addWidget(self.openButton)
 
         centralWidget = QtWidgets.QWidget()
         centralWidget.setLayout(self.mainLayout)
@@ -130,7 +138,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("CAT by Be")
         self.setWindowIcon(self.icon)
         self.setMinimumWidth(600)
-        self.setMinimumHeight(800)
+        self.setMinimumHeight(650)
 
     def _connectWidgets(self):
         """ Connect slots and signals
@@ -145,6 +153,7 @@ class CATWindow(QtWidgets.QMainWindow):
         # readDocs
         self.assetTree.customContextMenuRequested.connect(self._contextMenu)
         self.assetTree.clicked.connect(self._onAssetChanged)
+        self.elementWidget.elementTree.clicked.connect(self._onElementChanged)
 
     ##### UI Functions #####
 
@@ -180,33 +189,26 @@ class CATWindow(QtWidgets.QMainWindow):
         menu.exec_(self.assetTree.mapToGlobal(point))
 
     def _createNewProject(self):
-            """ Create a standard project (directory file and json),
-                can be an existing directory or a new one via fild dialog
-            """
+        """ Create a standard project (directory file and json),
+            can be an existing directory or a new one via fild dialog
+        """
 
-            qfd = QtWidgets.QFileDialog()
-            self.projectPath = QtWidgets.QFileDialog.getSaveFileName(
-                qfd,
-                ("Create a .JSON project file..."),
-                filter="JSON Files (*.json *.JSON)")[0]
+        qfd = QtWidgets.QFileDialog()
+        self.projectPath = QtWidgets.QFileDialog.getSaveFileName(
+            qfd,
+            ("Create a .JSON project file..."),
+            filter="JSON Files (*.json *.JSON)")[0]
 
-            if not self.projectPath:
-                return
-            
-            self.projectDirectory = os.path.dirname(self.projectPath)
-            self.project = os.path.split(self.projectPath)[1]
-
-            if not _project.createProject(self.projectPath, self.project):
-                return
-
-            self.projectLineEdit.setText(os.path.splitext(self.project)[0])
-            existingAssets = _project.getProjectAssets(self.projectPath)
-
-            if existingAssets:
-                self._refresh(existingAssets)
+        if not self.projectPath:
+            return
+        
+        self.projectDirectory = os.path.dirname(self.projectPath)
+        self.project = os.path.split(self.projectPath)[1]
+        self._CATAPI.createProject(self.projectPath, self.project)
 
     def _onAssetChanged(self, index):
         """ Logic to run when the user clicks a new asset in the main asset tree view """
+        self.selectedElement = None
 
         # clear the element view
         self.elementWidget.elementTree.model.removeRows(
@@ -220,6 +222,14 @@ class CATWindow(QtWidgets.QMainWindow):
             # TODO p4 status
             elementPath = os.path.join(assetPath, element.lower())
             self.elementWidget.elementTree.addElementToTree(element, "LOCAL_UP_TO_DATE", elementPath)
+
+        self.selectedAsset = asset
+        print(self.selectedAsset)
+        self._updateElementWidget()
+
+    def _onElementChanged(self, index):
+        self.selectedElement = self.elementWidget.elementTree.model.item(index.row(), 0).text().capitalize()
+        self._updateElementWidget()
 
     def _openExistingProject(self):
         """ Open an existing json project
@@ -239,6 +249,9 @@ class CATWindow(QtWidgets.QMainWindow):
         self.project = os.path.splitext(os.path.basename(self.projectPath))[0]
         self.projectLineEdit.setText(self.project)
         self._refresh(init=True)
+
+    def _updateElementWidget(self):
+        self.elementWidget.refresh(self.selectedAsset, self.selectedElement)
 
     def _refresh(self, init=False, newAsset=None):
         """ Init list items, append, and sort the list widget items

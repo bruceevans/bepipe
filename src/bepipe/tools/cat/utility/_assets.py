@@ -10,7 +10,7 @@ from .import _jsonutils
 
 _ASSET_TREE = "resources/asset_tree.json"
 
-def createAssetDict(assetName, assetType, elements, assetPath):
+def createAssetDict(assetName, assetType, elements, assetPath, depotPath):
     """ Organize asset data into a dict
 
         args:
@@ -24,10 +24,11 @@ def createAssetDict(assetName, assetType, elements, assetPath):
     """
 
     assetDict = {
-        "NAME":assetName,
-        "TYPE":assetType,
-        "ELEMENTS":elements,
-        "PATH":assetPath
+        "NAME": assetName,
+        "TYPE": assetType,
+        "ELEMENTS": elements,
+        "PATH": assetPath,
+        "DEPOT_PATH": depotPath
     }
 
     return assetDict

@@ -14,24 +14,17 @@ class ElementWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent=parent)
 
-        self.setFixedHeight(100)
         self.layout = None
 
-        # self.selectedElement = None
-
-        # temp for formatting currently
-        self.assetName = "ASSET"
-        self.perforceStatus = ""
-        self.elementName = "Element"
-        self.createdBy = "Bevans"
-        self.createdDate = "00/00/00"
-        self.updatedBy = "Bevans"
-        self.updatedDate = "00/00/00"
+        self.assetName = "Select an Asset"
+        self.elementName = ""
+        self.createdBy = ""
+        self.createdDate = ""
+        self.updatedBy = ""
+        self.updatedDate = ""
 
         self._setupUi()
         self.setFixedHeight(200)
-
-        # self.setEnabled(False)
 
     def _setupUi(self):
 
@@ -43,9 +36,9 @@ class ElementWidget(QtWidgets.QWidget):
         self.thumbnailLabel.setPixmap(self.thumbnail)
 
         self.nameLabel = QtWidgets.QLabel(self.assetName)  # BIG
-        self.nameLabel.setFont(QtGui.QFont('Calibri', 12, QtGui.QFont.Bold))
+        self.nameLabel.setFont(QtGui.QFont('Calibri', 14, QtGui.QFont.Bold))
 
-        self.elementLabel = QtWidgets.QLabel(self.elementName)  # big
+        self.elementLabel = QtWidgets.QLabel("Element: {}".format(self.elementName))  # big
         self.elementLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
 
         self.createdByLabel = QtWidgets.QLabel("Created By: {}".format(self.createdBy))  # small
@@ -64,11 +57,8 @@ class ElementWidget(QtWidgets.QWidget):
         textStatus.addWidget(self.createdByLabel)
         textStatus.addWidget(self.createDateLabel)
 
-        # self.layout.addLayout(textStatus, stretch=0)
-
         elementListLayout = QtWidgets.QVBoxLayout()
         elementGroup = QtWidgets.QGroupBox("Elements")
-        # elementList = QtWidgets.QListView()
         self.elementTree = ElementTree()
         elementListLayout.addWidget(self.elementTree)
         elementGroup.setLayout(elementListLayout)
@@ -81,8 +71,6 @@ class ElementWidget(QtWidgets.QWidget):
         statusGroupLayout.addWidget(self.thumbnailLabel)
         statusGroup.setLayout(statusGroupLayout)
 
-        # self.layout.addLayout(textStatus, stretch=0)
-        # self.layout.addWidget(self.thumbnailLabel)
         self.layout.addWidget(statusGroup)
 
         self.setLayout(self.layout)
@@ -90,6 +78,37 @@ class ElementWidget(QtWidgets.QWidget):
     # connect
 
     # refresh
+    def refresh(self, asset, element):
+        """ Update the text labels
+
+        Args:
+            asset (dict): Asset dict from project file
+            element (str): Name of the selected elemen
+        """
+
+        # self.assetName = asset.get("NAME")
+        self.nameLabel.setText(asset.get("NAME"))
+        if element:
+            self.elementLabel.setText("Element: {}".format(element))
+            # TODO add these values to the asset dict
+            self.updatedBy = "Bevans"
+            self.updatedByLabel.setText("Last Updated By: {}".format(self.updatedBy.lower()))
+            self.updatedDate = "00/00/00"
+            self.updatedLabel.setText("Last Updated On: {}".format(self.updatedDate.lower()))
+            self.createdBy = "Bevans"
+            self.createdByLabel.setText("Created By: {}".format(self.createdBy.lower()))
+            self.createdDate = "00/00/00"
+            self.createDateLabel.setText("Created On: {}".format(self.createdDate.lower()))
+        else:
+            self.elementLabel.setText("Element: ")
+            self.updatedBy = ""
+            self.updatedByLabel.setText("Last Updated By: {}".format(self.updatedBy))
+            self.updatedDate = ""
+            self.updatedLabel.setText("Last Updated On: {}".format(self.updatedDate))
+            self.createdBy = ""
+            self.createdByLabel.setText("Created By: {}".format(self.createdBy))
+            self.createdDate = ""
+            self.createDateLabel.setText("Created On: {}".format(self.createdDate))
 
 
 class ElementTree(_simpleTreeView.SimpleTree):
