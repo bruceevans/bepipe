@@ -5,7 +5,9 @@ import shutil
 from pprint import pprint
 
 import bepipe.core.path as path
+
 from .import _jsonutils
+from . import _constants
 
 
 _ASSET_TREE = "resources/asset_tree.json"
@@ -84,9 +86,7 @@ def _getTemplateDirectories():
         json file in the resources folder
     """
 
-    baseDirectory = os.path.dirname(__file__)
-    templateFile = os.path.join(baseDirectory, _ASSET_TREE)
-    templateData = _jsonutils.readJsonFile(templateFile)
+    templateData = _jsonutils.readJsonFile(_constants.ASSET_TREE)
     tempDirs = [i for i in templateData if i.get("Type") == "Directory"]
     return tempDirs
 

@@ -64,6 +64,9 @@ P4_TOOLTIPS = {
     'CHECKED_OUT': "Asset is checked out"
 }
 
+ASSET_TREE = os.path.join(FILE_DIRECTORY, 'resources/asset_tree.json')
+RESOURCES_FOLDER = os.path.join(FILE_DIRECTORY, 'resources')
+
 CAT_THUMBNAIL = os.path.join(FILE_DIRECTORY, 'resources/thumbnails/thumbnail_CAT.png')
 
 WINDOW_ICON = os.path.join(FILE_DIRECTORY, 'resources/icons/icon_CAT.png')

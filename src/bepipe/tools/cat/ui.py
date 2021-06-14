@@ -244,6 +244,8 @@ class CATWindow(QtWidgets.QMainWindow):
         """ Open an existing json project
         """
 
+        # TODO move bulk of this to API
+
         qfd = QtWidgets.QFileDialog()
         self.projectPath = QtWidgets.QFileDialog.getOpenFileName(
             qfd,
@@ -303,19 +305,14 @@ class CATWindow(QtWidgets.QMainWindow):
 
         path = os.path.join(self.projectDirectory, assetName)
         depotPath = os.path.join(_settings.PERFORCE_DEPOT_PATH, assetName)
-        
-        print(assetName)
-        print(assetType)
-        pprint(elements)
-        print(path)
-        print(depotPath)
 
         self._CAT_API.createAsset(
             assetName,
             assetType,
             elements,
             path,
-            depotPath
+            depotPath,
+            self.projectPath
         )
 
         # TODO confirmation box, create another or close?

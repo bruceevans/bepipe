@@ -48,9 +48,12 @@ class CAT(object):
             elements ([str]): Elements used by this asset (mesh, maps, rig, etc.)
             path (str): Path to the asset's base folder
             depotPath (str): Path to asset in perforce depot
-            project (str): Path to the project JSON folder
+            project (str): Path to the project's parent directory
 
         """
+
+        projectDirectory = os.path.dirname(project)
+
         asset = _assets.createAssetDict(
             assetName,
             assetType,
@@ -58,7 +61,7 @@ class CAT(object):
             assetPath,
             depotPath
             )
-        _assets.createAssetDirectories(project, asset)
+        _assets.createAssetDirectories(projectDirectory, asset)
         _assets.writeAssetToFile(project, asset)
         # TODO move starter files
 

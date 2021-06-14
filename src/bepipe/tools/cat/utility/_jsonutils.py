@@ -2,7 +2,8 @@
 
 import os
 import json
-import pprint as pp
+
+from bepipe.core import bepeefour as BP4
 
 def bepToJson(bepFile):
     """ Replace the file extension
@@ -23,7 +24,7 @@ def readJsonFile(jsonFile):
         returns:
             dict
     """
-
+    BP4.checkOutFiles([jsonFile])
     with open(jsonFile, 'r') as readFile:
         data=json.load(readFile)
     return data
@@ -72,7 +73,7 @@ def writeToExistingJson(jsonFile, newData):
         returns:
             bool
     """
-
+    BP4.checkOutFiles([jsonFile])
     with open(jsonFile) as readFile:
         data=json.load(readFile)
         data.append(newData)
