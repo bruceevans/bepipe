@@ -6,7 +6,8 @@ asset = "//firinne_assets/test.blend"
 
 assets = ["//firinne_assets/test.blend", "//firinne_assets/space_topbar.py"]
 
-perforceFile = BP4.isFileLocal(asset) # gives both paths
+
+print(BP4.getConnectionInfo())
 
 """
 [{'clientFile': '//bevans-pc/test.blend',
@@ -15,15 +16,6 @@ perforceFile = BP4.isFileLocal(asset) # gives both paths
   'path': 'e:\\firinne\\assets\\test.blend',
   'syncTime': '1623448442'}]
 """
-
-# get status
-if perforceFile:
-    # pprint(BP4.getFileStatus(perforceFile[0].get('depotFile')))
-    # print(perforceFile[0].get('depotFile'))
-    depotFile = perforceFile[0].get('depotFile')
-else:
-    print("FILE IS NOT LOCAL")
-
 
 """
 for f in result:
@@ -45,17 +37,6 @@ for f in result:
         #.rev
 """
 
-def isLatestVersion(f, ver):
-    """ Quick test to determine if local version is up to date
-
-    Args:
-        f (str): Depot path of the file
-        ver (int) : Current local version
-
-    Returns:
-        bool
-    """
-    pass
 
 ## State Cases ##
 

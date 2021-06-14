@@ -6,6 +6,10 @@ from pprint import pprint
 from . import _jsonutils
 from bepipe.core import bepeefour as BP4
 
+
+_PROJECT_CHANGELIST_DESCRIPTION = "Added new project file: {}"
+
+
 def createProject(projectPath, projectName):
     """ Create a project json file
 
@@ -28,6 +32,7 @@ def createProject(projectPath, projectName):
 
     _jsonutils.writeJson(projectPath, projectDict)
     BP4.addNewFile(projectPath)
+    BP4.submit(_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
     return True
 
 def getProjectAssets(projectFile):

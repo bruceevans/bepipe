@@ -1,18 +1,18 @@
 
 import os
-import sys
 from pprint import pprint
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
 import bepipe.core.qt.style as style
-import bepipe.core.qt.widgets as widgets
 
-from . utility import _project
-from . utility import _constants
-from . import _assetTree
-from . import _elementWidget
 from . import cat
+from . utility import _project
+from . utility import _settings
+from . utility import _constants
+from . dialog import _assetTree
+from . dialog import _elementWidget
+from . dialog import _createAssetDialog
 
 
 _SPACER = QtWidgets.QSpacerItem(0, 10)
@@ -25,12 +25,16 @@ class CATWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(CATWindow, self).__init__()
 
+        self._CAT_API = cat.CAT()
         self.icon = QtGui.QIcon(_constants.WINDOW_ICON)
+
+        self.project = None
+        self.projectPath = None
+        self.projectDirectory = None
 
         self.selectedAsset = None
         self.selectedElement = None
-
-        self._CAT_API = cat.CAT()
+        self.createAssetWindow = _createAssetDialog.CreateAssetDialog()
 
         self._setupUi()
         self._connectWidgets()
@@ -148,12 +152,14 @@ class CATWindow(QtWidgets.QMainWindow):
 
         self.newProject.triggered.connect(self._createNewProject)
         self.openProject.triggered.connect(self._openExistingProject)
-        # createNewAsset
+        self.createNewAsset.triggered.connect(self._showCreateAssetWindow)
         # viewConnection
         # readDocs
         self.assetTree.customContextMenuRequested.connect(self._contextMenu)
         self.assetTree.clicked.connect(self._onAssetChanged)
         self.elementWidget.elementTree.clicked.connect(self._onElementChanged)
+
+        self.createAssetWindow.createButton.clicked.connect(self._createAsset)
 
     ##### UI Functions #####
 
@@ -253,9 +259,6 @@ class CATWindow(QtWidgets.QMainWindow):
         self.projectLineEdit.setText(self.project)
         self._refresh(init=True)
 
-    def _updateElementWidget(self):
-        self.elementWidget.refresh(self.selectedAsset, self.selectedElement)
-
     def _refresh(self, init=False, newAsset=None):
         """ Init list items, append, and sort the list widget items
 
@@ -263,6 +266,7 @@ class CATWindow(QtWidgets.QMainWindow):
                 init (bool): initialize the list
                 newAsset (dict): asset to be appended
         """
+
         # TODO separate this into two functions, onOpen and onAddAsset or something
 
         existingAssets = _project.getProjectAssets(self.projectPath)
@@ -279,3 +283,54 @@ class CATWindow(QtWidgets.QMainWindow):
             self.assetTree.addAssetToTree(self.assetTree.model, newAsset)
 
         # TODO self.assetList.sortItems()
+
+    def _showCreateAssetWindow(self):
+        if not self.project:
+            self._showStatusMessage('WARN', "Open a project first!")
+            return
+
+        self.createAssetWindow.show()
+
+    def _createAsset(self):
+
+        assetName = self.createAssetWindow.nameLineEdit.text()
+        assetType = _constants.ASSET_TYPES[self.createAssetWindow.assetTypeDrop.currentIndex()]
+        elements = []
+
+        for element in self.createAssetWindow.elements:
+            if element.isChecked():
+                elements.append(element.text())
+
+        path = os.path.join(self.projectDirectory, assetName)
+        depotPath = os.path.join(_settings.PERFORCE_DEPOT_PATH, assetName)
+        
+        print(assetName)
+        print(assetType)
+        pprint(elements)
+        print(path)
+        print(depotPath)
+
+        self._CAT_API.createAsset(
+            assetName,
+            assetType,
+            elements,
+            path,
+            depotPath
+        )
+
+        # TODO confirmation box, create another or close?
+        self.createAssetWindow.reset()
+        self.createAssetWindow.hide()
+
+    def _showStatusMessage(self, level, msg):
+        """ Show a status message at a given level (INFO, WARN, ERROR)
+
+        Args:
+            level (str): Message severity
+            msg (str): Message to show
+        """
+        self.statusBar().setStyleSheet(_constants.MESSAGE_SEVERITY.get(level))
+        self.statusBar().showMessage(msg)
+
+    def _updateElementWidget(self):
+        self.elementWidget.refresh(self.selectedAsset, self.selectedElement)

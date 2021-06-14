@@ -42,7 +42,7 @@ class CAT(object):
         copies the base files to each of the elements, and adds the info to
         the project file
 
-        args:
+        Args:
             name (str): Name of the asset
             type (str): Type of asset (env, char, prop, etc.)
             elements ([str]): Elements used by this asset (mesh, maps, rig, etc.)
@@ -60,6 +60,7 @@ class CAT(object):
             )
         _assets.createAssetDirectories(project, asset)
         _assets.writeAssetToFile(project, asset)
+        # TODO move starter files
 
     def createProject(self, projectPath, project):
         # _project interfaces with the json serializing

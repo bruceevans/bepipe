@@ -1,8 +1,9 @@
 import os
+from bepipe.core.qt import style
 
 FILE_DIRECTORY = os.path.join(os.path.dirname(__file__)).split('utility')[0]
 
-ASSET_TYPES = ['char', 'env', 'prop', 'vfx']
+ASSET_TYPES = ['char', 'env', 'prop', 'vfx']  # TODO Texture/Material/Trim
 
 ASSET_ICONS = {
     'char': os.path.join(FILE_DIRECTORY, 'resources/icons/char.png'),
@@ -12,15 +13,16 @@ ASSET_ICONS = {
 }
 
 ELEMENTS = [
-    "animation",
-    "cache",
-    "lighting",
-    "maps",
-    "mesh",
-    "reference",
-    "render",
-    "rig",
-    "sculpt"
+    "animation",    # Blender
+    "bake",         # Marmo
+    "cache",        # Exports from Blender
+    "lighting",     # Marmo, Blender, or UE4
+    "maps",         # Designer, Photoshop, Painter
+    "mesh",         # Blender
+    "reference",    # Open to images, vids, pure ref, docs
+    "render",       # Render outputs
+    "rig",          # Blender
+    "sculpt"        # ZBrush
     ]
 
 ELEMENT_ICONS = {
@@ -40,6 +42,12 @@ MENU_ICONS = {
     'modify': os.path.join(FILE_DIRECTORY, "resources/icons/modify.png"),
     'rename': os.path.join(FILE_DIRECTORY, "resources/icons/rename.png"),
     'delete': os.path.join(FILE_DIRECTORY, "resources/icons/delete.png")
+}
+
+MESSAGE_SEVERITY = {
+    'INFO': style.WHITE_TEXT,
+    'WARN': style.ORANGE_TEXT,
+    'ERROR': style.RED_TEXT
 }
 
 P4_ICONS = {

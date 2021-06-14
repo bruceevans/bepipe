@@ -93,6 +93,14 @@ def addNewFile(f):
     p4.run("add", f)
 
 @peefourcommand
+def submit(description):
+    p4 = getP4Instance()
+    change = p4.run_change( "-o" )[0]
+    change[ "Description" ] = description
+    p4.input = change
+    p4.run_submit( "-i" )
+
+@peefourcommand
 def checkOutFiles(files, version=None):
     """ Create a changelist and edit the given files
 
@@ -144,8 +152,6 @@ def getVersionHistory(perforceFile):
     p4 = getP4Instance()
     return(p4.run_filelog(perforceFile))
 
-from pprint import pprint
-
 @peefourcommand
 def getFileStatus(files):
     """ Get the status of the given files
@@ -179,3 +185,9 @@ def isFileLocal(f):
     p4 = getP4Instance()
     result = p4.run_have(f)
     return result
+
+@peefourcommand
+def getConnectionInfo():
+    p4 = getP4Instance()
+    info = p4.run("info")
+    return info

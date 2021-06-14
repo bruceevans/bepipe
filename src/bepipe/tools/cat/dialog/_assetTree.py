@@ -1,8 +1,8 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from . utility import _constants
-from . dialog import _simpleTreeView
+from .. utility import _constants
+from .. dialog import _simpleTreeView
 
 class AssetTree(_simpleTreeView.SimpleTree):
     """ Tree view for the project's assets
