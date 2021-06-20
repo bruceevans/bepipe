@@ -306,7 +306,7 @@ class CATWindow(QtWidgets.QMainWindow):
         path = os.path.join(self.projectDirectory, assetName)
         depotPath = os.path.join(_settings.PERFORCE_DEPOT_PATH, assetName)
 
-        self._CAT_API.createAsset(
+        newAsset = self._CAT_API.createAsset(
             assetName,
             assetType,
             elements,
@@ -318,6 +318,7 @@ class CATWindow(QtWidgets.QMainWindow):
         # TODO confirmation box, create another or close?
         self.createAssetWindow.reset()
         self.createAssetWindow.hide()
+        self._refresh(newAsset=newAsset)
 
     def _showStatusMessage(self, level, msg):
         """ Show a status message at a given level (INFO, WARN, ERROR)

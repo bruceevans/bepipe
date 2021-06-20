@@ -13,20 +13,20 @@ ASSET_ICONS = {
 }
 
 ELEMENTS = [
-    "animation",    # Blender
-    "bake",         # Marmo
-    "cache",        # Exports from Blender
-    "lighting",     # Marmo, Blender, or UE4
-    "maps",         # Designer, Photoshop, Painter
-    "mesh",         # Blender
-    "reference",    # Open to images, vids, pure ref, docs
-    "render",       # Render outputs
-    "rig",          # Blender
-    "sculpt"        # ZBrush
+    'animation',    # Blender
+    'bake',         # Marmo
+    'cache',        # Exports from Blender
+    'lighting',     # Marmo, Blender, or UE4
+    'maps',         # Designer, Photoshop, Painter
+    'mesh',         # Blender
+    'reference',    # Open to images, vids, pure ref, docs
+    'render',       # Render outputs
+    'rig',          # Blender
+    'sculpt'        # ZBrush
     ]
 
 ELEMENT_ICONS = {
-    'anim': os.path.join(FILE_DIRECTORY, 'resources/icons/icon_anim.png'),
+    'animation': os.path.join(FILE_DIRECTORY, 'resources/icons/icon_anim.png'),
     'cache': os.path.join(FILE_DIRECTORY, 'resources/icons/icon_cache.png'),
     'lighting': os.path.join(FILE_DIRECTORY, 'resources/icons/icon_light.png'),
     'maps': os.path.join(FILE_DIRECTORY, 'resources/icons/icon_maps.png'),
@@ -38,10 +38,10 @@ ELEMENT_ICONS = {
 }
 
 MENU_ICONS = {
-    'disk': os.path.join(FILE_DIRECTORY, "resources/icons/disk.png"),
-    'modify': os.path.join(FILE_DIRECTORY, "resources/icons/modify.png"),
-    'rename': os.path.join(FILE_DIRECTORY, "resources/icons/rename.png"),
-    'delete': os.path.join(FILE_DIRECTORY, "resources/icons/delete.png")
+    'disk': os.path.join(FILE_DIRECTORY, 'resources/icons/disk.png'),
+    'modify': os.path.join(FILE_DIRECTORY, 'resources/icons/modify.png'),
+    'rename': os.path.join(FILE_DIRECTORY, 'resources/icons/rename.png'),
+    'delete': os.path.join(FILE_DIRECTORY, 'resources/icons/delete.png')
 }
 
 MESSAGE_SEVERITY = {
@@ -58,17 +58,35 @@ P4_ICONS = {
 }
 
 P4_TOOLTIPS = {
-    'LOCAL_UP_TO_DATE': "Asset is up to date",
-    'LOCAL_OUT_OUT_DATE': "Asset is out of date, get latest",
-    'OFFLINE': "Asset does not exist locally, get latest",
-    'CHECKED_OUT': "Asset is checked out"
+    'LOCAL_UP_TO_DATE': 'Asset is up to date',
+    'LOCAL_OUT_OUT_DATE': 'Asset is out of date, get latest',
+    'OFFLINE': 'Asset does not exist locally, get latest',
+    'CHECKED_OUT': 'Asset is checked out'
+}
+
+# Templates to copy to elements folder, copies the entire folder contents
+TEMPLATE_PROJECTS = {
+    'animation' : os.path.join(FILE_DIRECTORY, 'resources/project-files/animation/anim-work.blend'),
+    'bake'      : os.path.join(FILE_DIRECTORY, 'resources/project-files/bake/bake-work.tbscene'),
+    'lighting'  : os.path.join(FILE_DIRECTORY, 'resources/project-files/lighting/lighting-work.blend'),
+    # maps is special...
+    'maps'      : [
+        os.path.join(FILE_DIRECTORY, 'resources/project-files/maps/psd/maps-work.psd'),
+        os.path.join(FILE_DIRECTORY, 'resources/project-files/maps/sd/maps-work.sbs'),
+        os.path.join(FILE_DIRECTORY, 'resources/project-files/maps/sp/maps-work.spp'),
+        ],
+    'mesh'      : os.path.join(FILE_DIRECTORY, 'resources/project-files/mesh/mesh-work.blend'),
+    'reference' : os.path.join(FILE_DIRECTORY, 'resources/project-files/reference/ref-work.pur'),
+    'rig'       : os.path.join(FILE_DIRECTORY, 'resources/project-files/rig/rig-work.blend'),
+    'sculpt'    : os.path.join(FILE_DIRECTORY, 'resources/project-files/sculpt/sculpt-work.ztl')
 }
 
 ASSET_TREE = os.path.join(FILE_DIRECTORY, 'resources/asset_tree.json')
+
 RESOURCES_FOLDER = os.path.join(FILE_DIRECTORY, 'resources')
 
 CAT_THUMBNAIL = os.path.join(FILE_DIRECTORY, 'resources/thumbnails/thumbnail_CAT.png')
 
 WINDOW_ICON = os.path.join(FILE_DIRECTORY, 'resources/icons/icon_CAT.png')
 
-NO_PROJECT = "Open a project or create a new one."
+NO_PROJECT = 'Open a project or create a new one.'

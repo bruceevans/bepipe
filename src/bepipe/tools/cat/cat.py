@@ -63,9 +63,14 @@ class CAT(object):
             )
         _assets.createAssetDirectories(projectDirectory, asset)
         _assets.writeAssetToFile(project, asset)
-        # TODO move starter files
+        _assets.createTemplateProjects(asset)
+        return asset
 
     def createProject(self, projectPath, project):
         # _project interfaces with the json serializing
         if not _project.createProject(projectPath, project):
             raise RuntimeError("Couldn't create the project file!")
+
+    def openProject(self):
+        """ Open an existing project
+        """

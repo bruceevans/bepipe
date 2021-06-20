@@ -87,10 +87,11 @@ def peefourcommand(func):
 # TODO give the appropriate user based on current prefs
 
 @peefourcommand
-def addNewFile(f):
+def addNewFiles(files):
     p4 = getP4Instance()
     # TODO create and submit changelist at the same time?
-    p4.run("add", f)
+    for f in files:
+        p4.run("add", f)
 
 @peefourcommand
 def submit(description):

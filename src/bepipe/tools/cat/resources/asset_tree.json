@@ -10,38 +10,9 @@
   },
   {
     "Type": "Directory",
-    "Path": "animation/animation-name",
-    "ElementType":"animation"
-  },
-  {
-    "Type": "Directory",
-    "Path": "animation/animation-name/_version",
-    "ElementType":"animation"
-  },
-  {
-    "Type": "Directory",
-    "Path": "animation/animation-name/_version/official",
-    "ElementType":"animation"
-  },
-
-  {
-    "Type": "Directory",
     "Path": "lighting",
     "ElementType":"lighting"
   },
-
-  {
-    "Type": "Directory",
-    "Path": "lighting/_version",
-    "ElementType":"lighting"
-  },
-
-  {
-    "Type": "Directory",
-    "Path": "lighting/_version/official",
-    "ElementType":"lighting"
-  },
-
   {
     "Type": "Directory",
     "Path": "maps",
@@ -49,47 +20,7 @@
   },
   {
     "Type": "Directory",
-    "Path": "maps/psd",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/sbd",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/sbd/map-exports",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/sbp",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/sbp/bake",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/sbp/map-exports",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/tga",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/_version",
-    "ElementType":"maps"
-  },
-  {
-    "Type": "Directory",
-    "Path": "maps/_version/official",
+    "Path": "maps/tga-main",
     "ElementType":"maps"
   },
   {
@@ -99,42 +30,17 @@
   },
   {
     "Type": "Directory",
-    "Path": "mesh/_version",
-    "ElementType":"mesh"
+    "Path": "render",
+    "ElementType":"render"
   },
   {
     "Type": "Directory",
-    "Path": "mesh/_version/official",
-    "ElementType":"mesh"
-  },
-  {
-    "Type": "Directory",
-    "Path": "output",
-    "ElementType":"output"
-  },
-  {
-    "Type": "Directory",
-    "Path": "output/turntable",
-    "ElementType":"output"
-  },
-  {
-    "Type": "Directory",
-    "Path": "output/turntable/_version",
-    "ElementType":"output"
-  },
-  {
-    "Type": "Directory",
-    "Path": "output/turntable/_version/official",
-    "ElementType":"output"
+    "Path": "render/turntable",
+    "ElementType":"render"
   },
   {
     "Type": "Directory",
     "Path": "reference",
-    "ElementType":"reference"
-  },
-  {
-    "Type": "Directory",
-    "Path": "reference/images",
     "ElementType":"reference"
   },
   {
@@ -149,16 +55,6 @@
   },
   {
     "Type": "Directory",
-    "Path": "rig/_version",
-    "ElementType":"rig"
-  },
-  {
-    "Type": "Directory",
-    "Path": "rig/_version/official",
-    "ElementType":"rig"
-  },
-  {
-    "Type": "Directory",
     "Path": "sculpt",
     "ElementType":"sculpt"
   },
@@ -169,22 +65,17 @@
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/zb",
+    "Path": "sculpt/decimated",
     "ElementType":"sculpt"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/zb/decimated",
-    "ElementType":"sculpt"
+    "Path": "bake",
+    "ElementType":"bake"
   },
   {
     "Type": "Directory",
-    "Path": "sculpt/_version",
-    "ElementType":"sculpt"
-  },
-  {
-    "Type": "Directory",
-    "Path": "sculpt/_version/official",
-    "ElementType":"sculpt"
+    "Path": "cache",
+    "ElementType":"cache"
   }
 ]

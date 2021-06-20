@@ -24,5 +24,18 @@ if __name__ == "__main__":
     run()
 
 # TODO
-# Create Asset
-# Copy starter project files over for each dcc
+# Check in project file on exit
+# Populate the version dropdown
+# Add version support to BP4
+# Tie perforce status to element icons
+# Recent projects
+# Open to last opened directory
+# Launch element in DCC app
+# Add 'Create Animation' to create menu
+    # - only on animation elements
+    # - duplicate?
+
+
+# TODO STRETCH GOALS
+# Settings for choosing DCC apps
+# Settings for perforce

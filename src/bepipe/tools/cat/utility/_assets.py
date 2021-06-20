@@ -5,12 +5,16 @@ import shutil
 from pprint import pprint
 
 import bepipe.core.path as path
+from bepipe.core import bepeefour as BP4
 
 from .import _jsonutils
 from . import _constants
 
 
 _ASSET_TREE = "resources/asset_tree.json"
+
+_ASSET_CHANGELIST_DESCRIPTION = "Added template files for {}"
+
 
 def createAssetDict(assetName, assetType, elements, assetPath, depotPath):
     """ Organize asset data into a dict
@@ -62,6 +66,44 @@ def createAssetDirectories(projectDirectory, asset):
                 except FileExistsError:
                     continue
     return True
+
+def createTemplateProjects(asset):
+    """ Move the template projects to their element folders
+    """
+    diskPath = asset.get("PATH")
+    elements = asset.get("ELEMENTS")
+
+    files = []
+    
+    for element in elements:
+        # print(os.path.join(diskPath, element))
+        # print(_constants.TEMPLATE_PROJECTS.get(element))
+
+        # skip cache and render
+        if element == 'cache' or element == 'render':
+            continue
+
+        # copy unless it maps
+        if element == 'maps':
+            print("MAPS")
+            mapTemplates = _constants.TEMPLATE_PROJECTS.get(element)
+            print("MAP TEMPLATES:")
+            print(mapTemplates)
+            for mapTemplate in mapTemplates:
+                copyFile = os.path.join(diskPath, element, os.path.basename(mapTemplate))
+                files.append(copyFile)
+                shutil.copy(mapTemplate, copyFile)
+        else:
+            # move the file to the location
+            templateFilePath = _constants.TEMPLATE_PROJECTS.get(element)
+            templateFile = os.path.basename(templateFilePath)
+            copyFile = os.path.join(diskPath, element, templateFile)
+            files.append(copyFile)
+            shutil.copy(templateFilePath, copyFile)
+
+        # Add to perforce
+        BP4.addNewFiles([files])
+        BP4.submit(_ASSET_CHANGELIST_DESCRIPTION.format(asset.get("NAME")))
 
 def deleteAssetDirectory(path):
     """ Delete an existing asset
