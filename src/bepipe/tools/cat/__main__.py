@@ -1,6 +1,8 @@
 import os
 import sys
-sys.path.append("D:\\dev\\packages\\bepipe\\src\\")
+
+# sys.path.append("D:\\dev\\packages\\bepipe\\src\\")
+sys.path.append("/Users/bevans/Documents/_dev/git/bepipe/src/")
 
 from PySide2 import QtWidgets
 

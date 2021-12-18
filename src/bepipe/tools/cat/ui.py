@@ -250,7 +250,8 @@ class CATWindow(QtWidgets.QMainWindow):
         self.projectPath = QtWidgets.QFileDialog.getOpenFileName(
             qfd,
             ("Select a project (JSON)"),
-            os.environ['USERPROFILE'],
+            os.getenv('HOME'),
+            # os.environ['USERPROFILE'],
             "JSON File *.json")[0]
 
         if not self.projectPath:
