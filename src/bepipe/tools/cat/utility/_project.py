@@ -31,8 +31,8 @@ def createProject(projectPath, projectName):
     ]
 
     _jsonutils.writeJson(projectPath, projectDict)
-    BP4.addNewFiles([projectPath])
-    BP4.submit(_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
+    # BP4.addNewFiles([projectPath])
+    # BP4.submit(_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
     return True
 
 def getProjectAssets(projectFile):

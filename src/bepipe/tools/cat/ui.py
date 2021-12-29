@@ -15,6 +15,7 @@ from . dialog import _elementWidget
 from . dialog import _createAssetDialog
 
 
+# TODO move to widgets module
 _SPACER = QtWidgets.QSpacerItem(0, 10)
 
 
@@ -304,7 +305,8 @@ class CATWindow(QtWidgets.QMainWindow):
             if element.isChecked():
                 elements.append(element.text())
 
-        path = os.path.join(self.projectDirectory, assetName)
+        # TODO add asset type to the path
+        path = os.path.join(self.projectDirectory, assetType, assetName)
         depotPath = os.path.join(_settings.PERFORCE_DEPOT_PATH, assetName)
 
         newAsset = self._CAT_API.createAsset(

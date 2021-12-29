@@ -50,15 +50,21 @@ def createAssetDirectories(projectDirectory, asset):
             bool
     """
 
-    templateDirs = _getTemplateDirectories()
-    assetPath = os.path.join(projectDirectory, asset.get("NAME"))
-    os.mkdir(assetPath)
+    # Check for the asset type folder, if it doesn't exist, make it
+    assetTypeDir = os.path.join(projectDirectory, asset.get("TYPE"))
+    if not os.path.isdir(assetTypeDir):
+        os.mkdir(assetTypeDir)
 
-    for element in asset.get("ELEMENTS"):  # element is an index
+    # assetPath = os.path.join(projectDirectory, asset.get("assetType"), asset.get("NAME"))
+    os.mkdir(asset.get("PATH"))
+
+    templateDirs = _getTemplateDirectories()
+
+    for element in asset.get("ELEMENTS"):
         for directory in templateDirs:
             if directory.get("ElementType") == element.lower():
                 relPath = directory.get("Path")
-                newFolder = os.path.join(assetPath, relPath)
+                newFolder = os.path.join(asset.get("PATH"), relPath)
                 newFolder = path.toLinuxPath(newFolder)
                 try:
                     os.makedirs(newFolder)
@@ -83,12 +89,12 @@ def createTemplateProjects(asset):
         if element == 'cache' or element == 'render':
             continue
 
+        # TODO make these work the same
+        # TODO rename to "NameElement" eg. PlayerMesh, FPSArmsMesh
+
         # copy unless it maps
         if element == 'maps':
-            print("MAPS")
             mapTemplates = _constants.TEMPLATE_PROJECTS.get(element)
-            print("MAP TEMPLATES:")
-            print(mapTemplates)
             for mapTemplate in mapTemplates:
                 copyFile = os.path.join(diskPath, element, os.path.basename(mapTemplate))
                 files.append(copyFile)
@@ -102,8 +108,8 @@ def createTemplateProjects(asset):
             shutil.copy(templateFilePath, copyFile)
 
         # Add to perforce
-        BP4.addNewFiles([files])
-        BP4.submit(_ASSET_CHANGELIST_DESCRIPTION.format(asset.get("NAME")))
+        # BP4.addNewFiles([files])
+        # BP4.submit(_ASSET_CHANGELIST_DESCRIPTION.format(asset.get("NAME")))
 
 def deleteAssetDirectory(path):
     """ Delete an existing asset
