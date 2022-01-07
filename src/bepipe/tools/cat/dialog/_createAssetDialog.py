@@ -1,7 +1,7 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .. utility import _constants
+from ..api import _constants
 
 
 class CreateAssetDialog(QtWidgets.QDialog):
@@ -65,11 +65,16 @@ class CreateAssetDialog(QtWidgets.QDialog):
         else:
             self.createButton.setEnabled(False)
 
+    def closeEvent(self, event):
+        self.reset()
+        event.accept()
+
     def reset(self):
         """ Reset all widgets
         """
 
-        # name label
-        # elements
-        # disable button
-        # hide
+        self.nameLineEdit.clear()
+        self.assetTypeDrop.setCurrentIndex(0)
+        for element in self.elements:
+            element.setChecked(True)
+    

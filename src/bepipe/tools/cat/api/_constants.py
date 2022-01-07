@@ -1,7 +1,10 @@
+# Never changing stuff used all over
+
 import os
 from bepipe.core.qt import style
 
-FILE_DIRECTORY = os.path.join(os.path.dirname(__file__)).split("utility")[0]
+# TODO maybe get this from a env var?
+FILE_DIRECTORY = os.path.join(os.path.dirname(__file__)).split("api")[0]
 
 ASSET_TYPES = ["char", "env", "material", "prop", "trim", "utility", "vfx"]
 
@@ -79,20 +82,18 @@ P4_TOOLTIPS = {
 
 # Templates to copy to elements folder, copies the entire folder contents
 TEMPLATE_PROJECTS = {
-    # TODO make all a list so there is only one code path
-    "animation" : os.path.join(FILE_DIRECTORY, "resources/project-files/animation/anim-work.blend"),
-    "bake"      : os.path.join(FILE_DIRECTORY, "resources/project-files/bake/bake-work.tbscene"),
-    "lighting"  : os.path.join(FILE_DIRECTORY, "resources/project-files/lighting/lighting-work.blend"),
-    # maps is special...
-    "maps"      : [
+    "animation": [os.path.join(FILE_DIRECTORY, "resources/project-files/animation/anim-work.blend")],
+    "bake": [os.path.join(FILE_DIRECTORY, "resources/project-files/bake/bake-work.tbscene")],
+    "lighting": [os.path.join(FILE_DIRECTORY, "resources/project-files/lighting/lighting-work.blend")],
+    "maps": [
         os.path.join(FILE_DIRECTORY, "resources/project-files/maps/psd/maps-work.psd"),
         os.path.join(FILE_DIRECTORY, "resources/project-files/maps/sd/maps-work.sbs"),
         os.path.join(FILE_DIRECTORY, "resources/project-files/maps/sp/maps-work.spp"),
         ],
-    "mesh"      : os.path.join(FILE_DIRECTORY, "resources/project-files/mesh/mesh-work.blend"),
-    "reference" : os.path.join(FILE_DIRECTORY, "resources/project-files/reference/ref-work.pur"),
-    "rig"       : os.path.join(FILE_DIRECTORY, "resources/project-files/rig/rig-work.blend"),
-    "sculpt"    : os.path.join(FILE_DIRECTORY, "resources/project-files/sculpt/sculpt-work.ztl")
+    "mesh": [os.path.join(FILE_DIRECTORY, "resources/project-files/mesh/mesh-work.blend")],
+    "reference": [os.path.join(FILE_DIRECTORY, "resources/project-files/reference/ref-work.pur")],
+    "rig": [os.path.join(FILE_DIRECTORY, "resources/project-files/rig/rig-work.blend")],
+    "sculpt": [os.path.join(FILE_DIRECTORY, "resources/project-files/sculpt/sculpt-work.ztl")]
 }
 
 ASSET_TREE = os.path.join(FILE_DIRECTORY, "resources/asset_tree.json")

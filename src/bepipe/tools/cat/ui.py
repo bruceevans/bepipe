@@ -6,13 +6,14 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 import bepipe.core.qt.style as style
 
-from . import cat
-from . utility import _project
-from . utility import _settings
-from . utility import _constants
-from . dialog import _assetTree
-from . dialog import _elementWidget
-from . dialog import _createAssetDialog
+from .api import cat
+# TODO these small api bits should be called from the cat module?
+from .api import _project
+from .api import _settings
+from .api import _constants
+from .dialog import _assetTree
+from .dialog import _elementWidget
+from .dialog import _createAssetDialog
 
 
 # TODO move to widgets module
@@ -32,6 +33,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.project = None
         self.projectPath = None
         self.projectDirectory = None
+        self.config = {}
 
         self.selectedAsset = None
         self.selectedElement = None
@@ -212,6 +214,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.projectDirectory = os.path.dirname(self.projectPath)
         self.project = os.path.split(self.projectPath)[1]
         self._CAT_API.createProject(self.projectPath, self.project)
+        self.config = self._CAT_API.createConfig(self.projectDirectory, self.project)
 
         # update form
         self.projectLineEdit.setText(os.path.splitext(self.project)[0])
@@ -245,21 +248,20 @@ class CATWindow(QtWidgets.QMainWindow):
         """ Open an existing json project
         """
 
-        # TODO move bulk of this to API
-
         qfd = QtWidgets.QFileDialog()
         self.projectPath = QtWidgets.QFileDialog.getOpenFileName(
             qfd,
             ("Select a project (JSON)"),
             os.getenv('HOME'),
             # os.environ['USERPROFILE'],
+            # TODO open to previous dir, store in config
             "JSON File *.json")[0]
 
         if not self.projectPath:
             return
 
-        self.projectDirectory = os.path.dirname(self.projectPath)
-        self.project = os.path.splitext(os.path.basename(self.projectPath))[0]
+        self.projectDirectory, self.project = self._CAT_API.openProject(self.projectPath)
+        self.config = self._CAT_API.getConfig(self.project)
         self.projectLineEdit.setText(self.project)
         self._refresh(init=True)
 

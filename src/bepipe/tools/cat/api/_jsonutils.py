@@ -5,7 +5,8 @@ import json
 
 from bepipe.core import bepeefour as BP4
 
-def bepToJson(bepFile):
+
+def catToJson(catFile):
     """ Replace the file extension
     """
     directory = os.path.dirname(bepFile)
@@ -13,7 +14,7 @@ def bepToJson(bepFile):
     extension = os.path.splitext(bepFile)[1]
     fileName = fileName.replace(extension, ".json")
     jsonFile = os.path.join(directory, fileName)
-    os.rename(bepFile, jsonFile)
+    os.rename(catFile, jsonFile)
 
 def readJsonFile(jsonFile):
     """ Open a json file and return all data
@@ -24,13 +25,13 @@ def readJsonFile(jsonFile):
         returns:
             dict
     """
-    BP4.checkOutFiles([jsonFile])
+    # BP4.checkOutFiles([jsonFile])
     with open(jsonFile, 'r') as readFile:
         data=json.load(readFile)
     return data
 
-def jsonToBep(jsonFile):
-    """ Rename the file to .bep
+def jsonToCat(jsonFile):
+    """ Rename the file to .cat
 
         args:
             jsonFile: path to jason file
@@ -38,7 +39,7 @@ def jsonToBep(jsonFile):
     directory = os.path.dirname(jsonFile)
     fileName = os.path.basename(jsonFile)
     extension = os.path.splitext(jsonFile)[1]
-    fileName = fileName.replace(extension, ".bep")
+    fileName = fileName.replace(extension, ".cat")
     bepFile = os.path.join(directory, fileName)
     os.rename(jsonFile, bepFile)
 
@@ -56,11 +57,10 @@ def writeJson(fileName, data):
     with open(fileName, 'w') as f:
         try:
             json.dump(data, f, indent=4)
-        except Exception as e:
+        except OSError as e:
             print(e)
             print("Unable to write the JSON file")
             return False
-        print("Successfully wrote {}".format(fileName))
         return True
 
 def writeToExistingJson(jsonFile, newData):

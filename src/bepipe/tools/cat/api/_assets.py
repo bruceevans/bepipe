@@ -1,4 +1,4 @@
-# anything that involves reading/writing asset to json files
+# anything that involves reading/writing asset to json files, directories, or template files
 
 import os
 import shutil
@@ -12,9 +12,13 @@ from . import _constants
 
 
 _ASSET_TREE = "resources/asset_tree.json"
-
 _ASSET_CHANGELIST_DESCRIPTION = "Added template files for {}"
+_GAMEREADY_ELEMENTS = ["animation", "cache", "maps", "mesh", "rig"]
 
+
+# TODO store only relative paths in the json
+# so we can do os.path.join(PROJECT_PATH, element-relative-path)
+# PROJECT_PATH SET IN _project.py
 
 def createAssetDict(assetName, assetType, elements, assetPath, depotPath):
     """ Organize asset data into a dict
@@ -33,7 +37,7 @@ def createAssetDict(assetName, assetType, elements, assetPath, depotPath):
         "NAME": assetName,
         "TYPE": assetType,
         "ELEMENTS": elements,
-        "PATH": assetPath,
+        "PATH": assetPath, # TODO make this relative
         "DEPOT_PATH": depotPath
     }
 
@@ -55,9 +59,7 @@ def createAssetDirectories(projectDirectory, asset):
     if not os.path.isdir(assetTypeDir):
         os.mkdir(assetTypeDir)
 
-    # assetPath = os.path.join(projectDirectory, asset.get("assetType"), asset.get("NAME"))
     os.mkdir(asset.get("PATH"))
-
     templateDirs = _getTemplateDirectories()
 
     for element in asset.get("ELEMENTS"):
@@ -82,31 +84,32 @@ def createTemplateProjects(asset):
     files = []
     
     for element in elements:
-        # print(os.path.join(diskPath, element))
-        # print(_constants.TEMPLATE_PROJECTS.get(element))
-
         # skip cache and render
         if element == 'cache' or element == 'render':
             continue
 
-        # TODO make these work the same
-        # TODO rename to "NameElement" eg. PlayerMesh, FPSArmsMesh
-
-        # copy unless it maps
-        if element == 'maps':
-            mapTemplates = _constants.TEMPLATE_PROJECTS.get(element)
-            for mapTemplate in mapTemplates:
-                copyFile = os.path.join(diskPath, element, os.path.basename(mapTemplate))
-                files.append(copyFile)
-                shutil.copy(mapTemplate, copyFile)
-        else:
-            # move the file to the location
-            templateFilePath = _constants.TEMPLATE_PROJECTS.get(element)
-            templateFile = os.path.basename(templateFilePath)
-            copyFile = os.path.join(diskPath, element, templateFile)
+        templates = _constants.TEMPLATE_PROJECTS.get(element)
+        for template in templates:
+            copyFile = os.path.join(diskPath, element, os.path.basename(template))
             files.append(copyFile)
-            shutil.copy(templateFilePath, copyFile)
+            shutil.copy(template, copyFile)
 
+            # Rename the template file
+            newFileName = "{}-{}".format(asset.get("NAME"), os.path.basename(template))
+            renameFile = os.path.join(diskPath, element, newFileName)
+            os.rename(copyFile, renameFile)
+
+            # NOTE bevans
+            # Make a 'gameready' folder, the assets in this folder will follow the game engine conventions (Unity vs Unreal vs other)
+            # eg. Unreal - FPSArms, Player, Wall, etc.
+            # Unity - fpsarms,  player, wall, etc.
+
+            if element in _GAMEREADY_ELEMENTS:
+                gameReadyDir = os.path.join(diskPath, element, "gameready")
+                if not os.path.isdir(os.path.join(diskPath, element, "gameready")):
+                    os.mkdir(gameReadyDir)
+
+        # TODO perforce check in
         # Add to perforce
         # BP4.addNewFiles([files])
         # BP4.submit(_ASSET_CHANGELIST_DESCRIPTION.format(asset.get("NAME")))
@@ -126,7 +129,6 @@ def _getListOfFiles(dirName):
     files = []
     for file in os.walk(dirName):
         files.append(file[0])
-    pprint(files)
     return files
 
 def _getTemplateDirectories():
@@ -186,8 +188,6 @@ def writeAssetToFile(projectFile, asset):
         projectData = _jsonutils.readJsonFile(projectFile)
     except FileNotFoundError:
         projectData=[]
-
-    # TODO what if there aren't any assets?
     
     projectData[1].get('ASSETS').append(asset)
     return _jsonutils.writeJson(projectFile, projectData)

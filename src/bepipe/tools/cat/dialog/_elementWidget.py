@@ -1,8 +1,8 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from .. utility import _constants
-from .. dialog import _simpleTreeView
+from ..api import _constants
+from ..dialog import _simpleTreeView
 
 class ElementWidget(QtWidgets.QWidget):
     """ Widget containing an element list and
