@@ -7,8 +7,6 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import bepipe.core.qt.style as style
 
 from .api import cat
-# TODO these small api bits should be called from the cat module?
-from .api import _project
 from .api import _settings
 from .api import _constants
 from .dialog import _assetTree
@@ -30,9 +28,15 @@ class CATWindow(QtWidgets.QMainWindow):
         self._CAT_API = cat.CAT()
         self.icon = QtGui.QIcon(_constants.WINDOW_ICON)
 
+        # Name of the project
         self.project = None
+        # Name of the project file
+        self.projectFile = None
+        # Path to the local project file
         self.projectPath = None
+        # Path to the project folder
         self.projectDirectory = None
+        # Config dictionary
         self.config = {}
 
         self.selectedAsset = None
@@ -212,12 +216,13 @@ class CATWindow(QtWidgets.QMainWindow):
             return
         
         self.projectDirectory = os.path.dirname(self.projectPath)
-        self.project = os.path.split(self.projectPath)[1]
-        self._CAT_API.createProject(self.projectPath, self.project)
-        self.config = self._CAT_API.createConfig(self.projectDirectory, self.project)
+        self.projectFile = os.path.split(self.projectPath)[1]
+        self.project = os.path.splitext(self.projectFile)[0]
+        self._CAT_API.createProject(self.projectPath, self.projectFile)
+        self.config = self._CAT_API.createConfig(self.projectDirectory, self.projectFile)
 
         # update form
-        self.projectLineEdit.setText(os.path.splitext(self.project)[0])
+        self.projectLineEdit.setText(self.project)
 
     def _onAssetChanged(self, index):
         """ Logic to run when the user clicks a new asset in the main asset tree view """
@@ -260,8 +265,9 @@ class CATWindow(QtWidgets.QMainWindow):
         if not self.projectPath:
             return
 
-        self.projectDirectory, self.project = self._CAT_API.openProject(self.projectPath)
-        self.config = self._CAT_API.getConfig(self.project)
+        self.projectDirectory, self.projectFile = self._CAT_API.openProject(self.projectPath)
+        self.project = os.path.splitext(self.projectFile)[0]
+        self.config = self._CAT_API.getConfig(self.projectDirectory, self.projectFile)
         self.projectLineEdit.setText(self.project)
         self._refresh(init=True)
 
@@ -275,7 +281,9 @@ class CATWindow(QtWidgets.QMainWindow):
 
         # TODO separate this into two functions, onOpen and onAddAsset or something
 
-        existingAssets = _project.getProjectAssets(self.projectPath)
+        print("GETTING ASSETS FROM:")
+        print(self.projectPath)
+        existingAssets = self._CAT_API.getProjectAssets(self.projectPath)
 
         if init and existingAssets:
             # opening a new project
@@ -317,7 +325,8 @@ class CATWindow(QtWidgets.QMainWindow):
             elements,
             path,
             depotPath,
-            self.projectPath
+            self.projectPath,
+            self.project
         )
 
         # TODO confirmation box, create another or close?

@@ -7,8 +7,8 @@ from pprint import pprint
 import bepipe.core.path as path
 from bepipe.core import bepeefour as BP4
 
-from .import _jsonutils
-from . import _constants
+from ..apiimport _jsonutils
+from ..api import _constants
 
 
 _ASSET_TREE = "resources/asset_tree.json"
@@ -20,30 +20,10 @@ _GAMEREADY_ELEMENTS = ["animation", "cache", "maps", "mesh", "rig"]
 # so we can do os.path.join(PROJECT_PATH, element-relative-path)
 # PROJECT_PATH SET IN _project.py
 
-def createAssetDict(assetName, assetType, elements, assetPath, depotPath):
-    """ Organize asset data into a dict
 
-        args:
-            assetName (str): name for the asset
-            assetType (str): type of asset
-            elements (str list): which element to create
-            assetPath (str): path to asset
 
-        returns:
-            dict
-    """
-
-    assetDict = {
-        "NAME": assetName,
-        "TYPE": assetType,
-        "ELEMENTS": elements,
-        "PATH": assetPath, # TODO make this relative
-        "DEPOT_PATH": depotPath
-    }
-
-    return assetDict
-
-def createAssetDirectories(projectDirectory, asset):
+# MIGRATED
+def createAssetDirectories(projectPath, asset):
     """ Create the folders on disk for the asset
 
         args:
@@ -54,19 +34,25 @@ def createAssetDirectories(projectDirectory, asset):
             bool
     """
 
+    projectDirectory = os.path.split(projectPath)[0]
     # Check for the asset type folder, if it doesn't exist, make it
     assetTypeDir = os.path.join(projectDirectory, asset.get("TYPE"))
+
     if not os.path.isdir(assetTypeDir):
         os.mkdir(assetTypeDir)
 
-    os.mkdir(asset.get("PATH"))
+    # TODO build the asset path from config project location, and the relative path
+    fullAssetPath = os.path.join(projectDirectory, asset["PATH"])
+    os.mkdir(fullAssetPath)
+
     templateDirs = _getTemplateDirectories()
 
     for element in asset.get("ELEMENTS"):
         for directory in templateDirs:
             if directory.get("ElementType") == element.lower():
+                # relative path for asset type folder
                 relPath = directory.get("Path")
-                newFolder = os.path.join(asset.get("PATH"), relPath)
+                newFolder = os.path.join(fullAssetPath, relPath)
                 newFolder = path.toLinuxPath(newFolder)
                 try:
                     os.makedirs(newFolder)
@@ -75,10 +61,20 @@ def createAssetDirectories(projectDirectory, asset):
                     continue
     return True
 
-def createTemplateProjects(asset):
+
+
+# MIGRATED
+def createTemplateProjects(projectDirectory, asset):
     """ Move the template projects to their element folders
+
+    Args:
+        projectDirectory (str): Path to project dir from config
+        asset (dict): Asset info
+
     """
-    diskPath = asset.get("PATH")
+
+    # Get the config disk path
+    diskPath = os.path.join(projectDirectory, asset.get("PATH"))
     elements = asset.get("ELEMENTS")
 
     files = []
@@ -114,6 +110,8 @@ def createTemplateProjects(asset):
         # BP4.addNewFiles([files])
         # BP4.submit(_ASSET_CHANGELIST_DESCRIPTION.format(asset.get("NAME")))
 
+
+
 def deleteAssetDirectory(path):
     """ Delete an existing asset
 
@@ -131,6 +129,7 @@ def _getListOfFiles(dirName):
         files.append(file[0])
     return files
 
+# MIGRATED
 def _getTemplateDirectories():
     """ Get the folder structure from the template directory
         json file in the resources folder
@@ -140,18 +139,7 @@ def _getTemplateDirectories():
     tempDirs = [i for i in templateData if i.get("Type") == "Directory"]
     return tempDirs
 
-def modifyAssetElements():
-    """
-    """
 
-def openOnDisk(path):
-    """ Open the asset in explorer/finder
-
-        args:
-            path (str): path to directory
-    """
-    if os.path.isdir(path):
-        os.startfile(path)
 
 def renameAsset(assetPath, oldName, newName):
     """ Rename all dirs and files in the tree
@@ -173,6 +161,7 @@ def renameAsset(assetPath, oldName, newName):
     # get the old name and new name
     # walk the tree, any file or directory with that name, replace it
 
+# MIGRATED
 def writeAssetToFile(projectFile, asset):
     """ Add a json entry for a new asset
 

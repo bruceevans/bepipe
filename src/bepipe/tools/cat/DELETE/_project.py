@@ -4,7 +4,7 @@
 import os
 import getpass
 
-from . import _jsonutils
+from ..api import _jsonutils
 from bepipe.core import bepeefour as BP4
 
 
@@ -72,16 +72,4 @@ def getProjectAssets(projectFile):
     return assets
 
 # TODO move to asset
-def removeAssetEntry(projectFile, asset):
-    """ Remove entry from project file
 
-        args:
-            projectFile (str): path to project
-            asset (dict): psset to remove
-    """
-
-    projectData = _jsonutils.readJsonFile(projectFile)
-    assets = projectData[1].get("ASSETS")
-    modifiedAssets = [a for a in assets if a != asset]
-    projectData[1]["ASSETS"] = modifiedAssets
-    _jsonutils.writeJson(projectFile, projectData)
