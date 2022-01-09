@@ -59,6 +59,7 @@ class CollapsableGroupBox(QtWidgets.QGroupBox):
             self.func()
 
 
+# TODO don't need this really, just use standard message boxes
 def bepMessageBox(title, msg, icon=None, func=None, cancelButton=False):
         """ Base message box to display text and confirm button,
             follow up with an optional function call

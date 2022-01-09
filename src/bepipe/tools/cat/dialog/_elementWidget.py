@@ -39,13 +39,19 @@ class ElementWidget(QtWidgets.QWidget):
         self.nameLabel.setFont(QtGui.QFont('Calibri', 14, QtGui.QFont.Bold))
 
         self.elementLabel = QtWidgets.QLabel("Element: {}".format(self.elementName))  # big
-        self.elementLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
+        self.elementLabel.setFont(QtGui.QFont('Calibri', 12, QtGui.QFont.Bold))
 
         self.createdByLabel = QtWidgets.QLabel("Created By: {}".format(self.createdBy))  # small
-        self.createDateLabel = QtWidgets.QLabel("Created On: {}".format(self.createdDate))
+        self.createdByLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
 
-        self.updatedByLabel = QtWidgets.QLabel("Last Updated By: {}".format(self.updatedBy))
-        self.updatedLabel = QtWidgets.QLabel("Last Updated On: {}".format(self.updatedDate))
+        self.createDateLabel = QtWidgets.QLabel("Created On: {}".format(self.createdDate))
+        self.createDateLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
+
+        self.updatedByLabel = QtWidgets.QLabel("Updated By: {}".format(self.updatedBy))
+        self.updatedByLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
+
+        self.updatedLabel = QtWidgets.QLabel("Updated On: {}".format(self.updatedDate))
+        self.updatedLabel.setFont(QtGui.QFont('Calibri', 11, QtGui.QFont.Bold))
 
         textStatus = QtWidgets.QVBoxLayout()
         textStatus.addWidget(self.nameLabel)
@@ -92,9 +98,9 @@ class ElementWidget(QtWidgets.QWidget):
             self.elementLabel.setText("Element: {}".format(element))
             # TODO add these values to the asset dict
             self.updatedBy = "Bevans"
-            self.updatedByLabel.setText("Last Updated By: {}".format(self.updatedBy.lower()))
+            self.updatedByLabel.setText("Updated By: {}".format(self.updatedBy.lower()))
             self.updatedDate = "00/00/00"
-            self.updatedLabel.setText("Last Updated On: {}".format(self.updatedDate.lower()))
+            self.updatedLabel.setText("Updated On: {}".format(self.updatedDate.lower()))
             self.createdBy = "Bevans"
             self.createdByLabel.setText("Created By: {}".format(self.createdBy.lower()))
             self.createdDate = "00/00/00"

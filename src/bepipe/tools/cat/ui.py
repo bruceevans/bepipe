@@ -16,7 +16,9 @@ from .dialog import _createAssetDialog
 
 # TODO move to widgets module
 _SPACER = QtWidgets.QSpacerItem(0, 10)
+_RECENT_PROJECT_LIMIT = 5
 
+# TODO add a filter search bar
 
 class CATWindow(QtWidgets.QMainWindow):
     """ Main gui for CAT
@@ -38,6 +40,9 @@ class CATWindow(QtWidgets.QMainWindow):
         self.projectDirectory = None
         # Config dictionary
         self.config = {}
+        # Local app settings
+        self.settings = QtCore.QSettings("BeTools", "CAT")
+        # self.settings.setValue("recentProjects", [])
 
         self.selectedAsset = None
         self.selectedElement = None
@@ -65,8 +70,11 @@ class CATWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(self.newProject)
         self.openProject = QtWidgets.QAction('Open Project', self)
         fileMenu.addAction(self.openProject)
-        self.openRecentProjects = QtWidgets.QAction('Open Recent', self)
-        fileMenu.addAction(self.openRecentProjects)
+        self.recentProjectsMenu = QtWidgets.QMenu('Open Recent', self)
+        fileMenu.addMenu(self.recentProjectsMenu)
+
+        self.recentProjects = []
+        self._refreshRecentProjects()
 
         self.createNewAsset = QtWidgets.QAction('Create New Asset', self)
         createMenu.addAction(self.createNewAsset)
@@ -189,14 +197,18 @@ class CATWindow(QtWidgets.QMainWindow):
 
         modifyElements = QtWidgets.QAction("Modify Elements")
         modifyElements.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("modify")))
+        # TODO open a create asset menu with the title read-only with the asset name
         menu.addAction(modifyElements)
 
         renameAsset = QtWidgets.QAction("Rename Asset")
         renameAsset.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("rename")))
+        # TODO open a simple line edit message box
+        # updata name, folder, path, etc.
         menu.addAction(renameAsset)
 
         deleteAsset = QtWidgets.QAction("Delete Asset")
         deleteAsset.setIcon(QtGui.QIcon(_constants.MENU_ICONS.get("delete")))
+        # TODO call delete func
         menu.addAction(deleteAsset)
         
         menu.exec_(self.assetTree.mapToGlobal(point))
@@ -220,6 +232,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.project = os.path.splitext(self.projectFile)[0]
         self._CAT_API.createProject(self.projectPath, self.projectFile)
         self.config = self._CAT_API.createConfig(self.projectDirectory, self.projectFile)
+        self._setRecentProjects()
 
         # update form
         self.projectLineEdit.setText(self.project)
@@ -239,10 +252,10 @@ class CATWindow(QtWidgets.QMainWindow):
             # add a new row in the elements tree
             # TODO p4 status
             elementPath = os.path.join(assetPath, element.lower())
+            # TODO make the status string a callback that can be inserted into the addElementToTree func
             self.elementWidget.elementTree.addElementToTree(element, "LOCAL_UP_TO_DATE", elementPath)
 
         self.selectedAsset = asset
-        print(self.selectedAsset)
         self._updateElementWidget()
 
     def _onElementChanged(self, index):
@@ -269,6 +282,33 @@ class CATWindow(QtWidgets.QMainWindow):
         self.project = os.path.splitext(self.projectFile)[0]
         self.config = self._CAT_API.getConfig(self.projectDirectory, self.projectFile)
         self.projectLineEdit.setText(self.project)
+
+        # move the recently opened project to the top of the recent project list
+        self._setRecentProjects()
+        self._refresh(init=True)
+
+    def _openRecentProject(self, projectPath):
+        """Open a recent project from the menu
+        
+        Args:
+            projectPath (str): Path to project
+        
+        """
+        # TODO if a project is open, close it
+        # TODO something is getting weird in the settings
+
+        # TODO make this into a dict?
+
+        print("OLD PROJECT PATH: {}".format(self.projectPath))
+        print("NEW PROJECT PATH: {}".format(projectPath))
+
+        self.projectPath = projectPath
+        self.projectDirectory, self.projectFile = self._CAT_API.openProject(self.projectPath)
+        self.project = os.path.splitext(self.projectFile)[0]
+        self.config = self._CAT_API.getConfig(self.projectDirectory, self.projectFile)
+        self.projectLineEdit.setText(self.project)
+
+        self._setRecentProjects()
         self._refresh(init=True)
 
     def _refresh(self, init=False, newAsset=None):
@@ -281,8 +321,6 @@ class CATWindow(QtWidgets.QMainWindow):
 
         # TODO separate this into two functions, onOpen and onAddAsset or something
 
-        print("GETTING ASSETS FROM:")
-        print(self.projectPath)
         existingAssets = self._CAT_API.getProjectAssets(self.projectPath)
 
         if init and existingAssets:
@@ -295,8 +333,49 @@ class CATWindow(QtWidgets.QMainWindow):
 
         if newAsset:
             self.assetTree.addAssetToTree(self.assetTree.model, newAsset)
+        self._refreshRecentProjects()
 
-        # TODO self.assetList.sortItems()
+    def _refreshRecentProjects(self):
+        # clear recent projects
+        self.recentProjects = []
+        self.recentProjectsMenu.clear()
+
+        for project in self.settings.value("recentProjects"):
+            projectName = project["project"]
+            action = QtWidgets.QAction(projectName, self)
+            action.setData(project)
+            action.triggered.connect(lambda: self._openRecentProject(project["path"]))
+            self.recentProjectsMenu.addAction(action)
+            self.recentProjects.append(action)
+
+        if not self.recentProjects:
+            # Add a pass through action
+            self.recentProjectsMenu.addAction(QtWidgets.QAction("No recent projects", self))
+
+    def _setRecentProjects(self):
+        recentProjects = self.settings.value("recentProjects")
+
+        currentProject = {
+            "project": self.project,
+            "path": self.projectPath
+        }
+
+        if not recentProjects:
+            recentProjects = [currentProject]
+            self.settings.setValue("recentProjects", recentProjects)
+            return
+        
+        project = [p for p in recentProjects if p["project"] == self.project]
+
+        if project:
+            # remove dict
+            recentProjects.remove(project[0])
+
+        recentProjects.insert(0, currentProject)
+        if len(recentProjects) > _RECENT_PROJECT_LIMIT:
+            recentProjects = recentProjects[:4]
+        self.settings.setValue("recentProjects", recentProjects)
+        self._refreshRecentProjects()
 
     def _showCreateAssetWindow(self):
         if not self.project:

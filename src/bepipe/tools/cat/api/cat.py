@@ -83,6 +83,11 @@ class CAT(object):
 
         """
 
+        # NOTE (bevans)
+        # This feels redundant, but there needs to be a local
+        # mapping for each project outside of qsetting and perforce
+        # this will allow for separate configs per project
+
         config = {
             "PROJECT": project,
             "PROJECT_NAME": os.path.splitext(project)[0],
@@ -108,9 +113,6 @@ class CAT(object):
         """
 
         print("SEARCHING CONFIG FOR: {}".format(project))
-
-        # TODO if not config file
-
         configFile = os.path.join(_PREFERENCES_PATH, project)
         if not os.path.isfile(configFile):
             print("NO CONFIG FILE, CREATING...")
