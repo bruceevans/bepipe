@@ -112,10 +112,8 @@ class CAT(object):
         
         """
 
-        print("SEARCHING CONFIG FOR: {}".format(project))
         configFile = os.path.join(_PREFERENCES_PATH, project)
         if not os.path.isfile(configFile):
-            print("NO CONFIG FILE, CREATING...")
             self.createConfig(projectDirectory, project)
         return _jsonutils.readJsonFile(configFile)
 

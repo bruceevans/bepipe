@@ -43,7 +43,7 @@ class CATWindow(QtWidgets.QMainWindow):
         # Local app settings
         self.settings = QtCore.QSettings("BeTools", "CAT")
         # self.settings.setValue("recentProjects", [])
-
+        self.recentProjects = []
         self.selectedAsset = None
         self.selectedElement = None
         self.createAssetWindow = _createAssetDialog.CreateAssetDialog()
@@ -72,9 +72,7 @@ class CATWindow(QtWidgets.QMainWindow):
         fileMenu.addAction(self.openProject)
         self.recentProjectsMenu = QtWidgets.QMenu('Open Recent', self)
         fileMenu.addMenu(self.recentProjectsMenu)
-
-        self.recentProjects = []
-        self._refreshRecentProjects()
+        self._setRecentProjects()
 
         self.createNewAsset = QtWidgets.QAction('Create New Asset', self)
         createMenu.addAction(self.createNewAsset)
@@ -266,13 +264,13 @@ class CATWindow(QtWidgets.QMainWindow):
         """ Open an existing json project
         """
 
+        fileDirectory = self.settings.value("recentProjectDirectory") or os.getenv('HOME')
+
         qfd = QtWidgets.QFileDialog()
         self.projectPath = QtWidgets.QFileDialog.getOpenFileName(
             qfd,
             ("Select a project (JSON)"),
-            os.getenv('HOME'),
-            # os.environ['USERPROFILE'],
-            # TODO open to previous dir, store in config
+            fileDirectory,
             "JSON File *.json")[0]
 
         if not self.projectPath:
@@ -283,26 +281,23 @@ class CATWindow(QtWidgets.QMainWindow):
         self.config = self._CAT_API.getConfig(self.projectDirectory, self.projectFile)
         self.projectLineEdit.setText(self.project)
 
+        # Set the settings
+        self.settings.setValue("recentProjectDirectory", self.projectDirectory)
+
         # move the recently opened project to the top of the recent project list
         self._setRecentProjects()
         self._refresh(init=True)
 
-    def _openRecentProject(self, projectPath):
+    def _openRecentProject(self):
         """Open a recent project from the menu
         
         Args:
             projectPath (str): Path to project
         
         """
-        # TODO if a project is open, close it
-        # TODO something is getting weird in the settings
-
-        # TODO make this into a dict?
-
-        print("OLD PROJECT PATH: {}".format(self.projectPath))
-        print("NEW PROJECT PATH: {}".format(projectPath))
-
-        self.projectPath = projectPath
+        action = self.sender()
+        # Update the project
+        self.projectPath = action.data()
         self.projectDirectory, self.projectFile = self._CAT_API.openProject(self.projectPath)
         self.project = os.path.splitext(self.projectFile)[0]
         self.config = self._CAT_API.getConfig(self.projectDirectory, self.projectFile)
@@ -319,8 +314,6 @@ class CATWindow(QtWidgets.QMainWindow):
                 newAsset (dict): asset to be appended
         """
 
-        # TODO separate this into two functions, onOpen and onAddAsset or something
-
         existingAssets = self._CAT_API.getProjectAssets(self.projectPath)
 
         if init and existingAssets:
@@ -330,52 +323,73 @@ class CATWindow(QtWidgets.QMainWindow):
             for asset in existingAssets:
                 # TODO get perforce status
                 self.assetTree.addAssetToTree(self.assetTree.model, asset)
-
         if newAsset:
             self.assetTree.addAssetToTree(self.assetTree.model, newAsset)
-        self._refreshRecentProjects()
-
-    def _refreshRecentProjects(self):
-        # clear recent projects
-        self.recentProjects = []
-        self.recentProjectsMenu.clear()
-
-        for project in self.settings.value("recentProjects"):
-            projectName = project["project"]
-            action = QtWidgets.QAction(projectName, self)
-            action.setData(project)
-            action.triggered.connect(lambda: self._openRecentProject(project["path"]))
-            self.recentProjectsMenu.addAction(action)
-            self.recentProjects.append(action)
-
-        if not self.recentProjects:
-            # Add a pass through action
-            self.recentProjectsMenu.addAction(QtWidgets.QAction("No recent projects", self))
 
     def _setRecentProjects(self):
-        recentProjects = self.settings.value("recentProjects")
 
+        recentProjects = self.settings.value("recentProjects")
         currentProject = {
             "project": self.project,
             "path": self.projectPath
         }
 
+        # No project = new CAT session
+        if not currentProject["project"] and not recentProjects:
+            self._refreshRecentProjects()
+            return
+
+        if not currentProject["project"]:
+            self._refreshRecentProjects(recentProjects=recentProjects)
+            return
+        
         if not recentProjects:
             recentProjects = [currentProject]
             self.settings.setValue("recentProjects", recentProjects)
+            self._refreshRecentProjects(recentProjects=recentProjects)
             return
+
+        project = [p for p in recentProjects if p.get("project") == self.project]
         
-        project = [p for p in recentProjects if p["project"] == self.project]
-
         if project:
-            # remove dict
-            recentProjects.remove(project[0])
+            if len(project) > 1:
+                print("WARNING! FOUND PROJECTS WITH MATCHING NAMES!")
+            project = project[0]
+            recentProjects.remove(project)
+        else:
+            # Project hasn't been added to settings yet
+            project = {
+                "project": self.project,
+                "path": self.projectPath
+            }
 
-        recentProjects.insert(0, currentProject)
         if len(recentProjects) > _RECENT_PROJECT_LIMIT:
             recentProjects = recentProjects[:4]
+
+        # Add current project back in the list at the head
+        recentProjects.insert(0, project)
+
         self.settings.setValue("recentProjects", recentProjects)
-        self._refreshRecentProjects()
+        self._refreshRecentProjects(recentProjects=recentProjects)
+
+    def _refreshRecentProjects(self, recentProjects=None):
+        # clear recent projects menu
+        self.recentProjectsMenu.clear()
+
+        if not recentProjects:
+            # Add a pass through action
+            self.recentProjectsMenu.addAction(QtWidgets.QAction("No recent projects", self))
+            return
+
+        # Create actions
+        for project in recentProjects:
+            projectName = project.get("project")
+            projectPath = project.get("path")
+            action = QtWidgets.QAction(projectName, self)
+            action.setData(projectPath)
+            action.triggered.connect(self._openRecentProject)
+            self.recentProjectsMenu.addAction(action)
+            self.recentProjects.append(project)
 
     def _showCreateAssetWindow(self):
         if not self.project:
@@ -385,6 +399,8 @@ class CATWindow(QtWidgets.QMainWindow):
         self.createAssetWindow.show()
 
     def _createAsset(self):
+        """Create an asset with info from the create asset menu
+        """
 
         assetName = self.createAssetWindow.nameLineEdit.text()
         assetType = _constants.ASSET_TYPES[self.createAssetWindow.assetTypeDrop.currentIndex()]
@@ -394,7 +410,6 @@ class CATWindow(QtWidgets.QMainWindow):
             if element.isChecked():
                 elements.append(element.text())
 
-        # TODO add asset type to the path
         path = os.path.join(self.projectDirectory, assetType, assetName)
         depotPath = os.path.join(_settings.PERFORCE_DEPOT_PATH, assetName)
 
@@ -408,7 +423,6 @@ class CATWindow(QtWidgets.QMainWindow):
             self.project
         )
 
-        # TODO confirmation box, create another or close?
         self.createAssetWindow.reset()
         self.createAssetWindow.hide()
         self._refresh(newAsset=newAsset)
