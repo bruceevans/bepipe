@@ -7,6 +7,7 @@ from . import _constants
 from . import _jsonutils
 
 import bepipe.core.path as path
+import bepipe.core.bep4 as bep4
 
 
 _PREFERENCES_PATH = os.path.join(os.path.expanduser('~'), "bepipe/cat")
@@ -14,12 +15,19 @@ _GAMEREADY_ELEMENTS = ["animation", "cache", "maps", "mesh", "rig"]
 _ASSET_CHANGELIST_DESCRIPTION = "Added template files for {}"
 _PROJECT_CHANGELIST_DESCRIPTION = "Added new project file: {}"
 
+_SERVER = "ec2-34-219-230-44.us-west-2.compute.amazonaws.com"
+_PORT = "1666"
+_CLIENT = "bevans_mbp_1988"
+
+# TODO build a list of standard DCC, store in a config
+
 
 class CAT(object):
     """API for creating assets in Cat
     """
     def __init__(self):
-        pass
+        # Init perforce
+        self._setupBP4()
 
     #####################
     ## PROJECT METHODS ##
@@ -52,7 +60,16 @@ class CAT(object):
         # TODO change extension to .cat?
 
         # BP4.addNewFiles([projectPath])
+        print("CREATING CHANGELIST")
+        try:
+            changelist = bep4.createChangelist(description=_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
         # BP4.submit(_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
+        except ValueError as e:
+            print("ERROR! \n{}".format(e))
+            return
+        print("ADDING PROJECT TO CHANGELIST")
+        bep4.addFileToChangelist(projectPath, changelist)
+
 
     def openProject(self, projectPath):
         """Open an existing project
@@ -181,6 +198,10 @@ class CAT(object):
             return None
         return assets
 
+    def openWorkFile(self, workFile):
+        """Open a working project file in the appropriate DCC
+        """
+
     def _createAssetDict(self, assetName, assetType, assetPath, elements, project, depotPath=None):
         """Organize asset data into a dict
 
@@ -245,6 +266,7 @@ class CAT(object):
                         os.makedirs(newFolder)
                         print("Created: {}".format(newFolder))
                     except FileExistsError:
+                        print("!!! ERROR !!!! Couldn't make {}".format(newFolder))
                         continue
         return True
 
@@ -335,6 +357,29 @@ class CAT(object):
         
         projectData[1].get('ASSETS').append(asset)
         return _jsonutils.writeJson(projectFile, projectData)
+
+    ##########################
+    ## PERFORCE INTERACTION ##
+    ##########################
+
+    def _setupBP4(self):
+        """Establish a connection with the perforce server
+        """
+
+        self._bp4 = bep4.BP4(port="{}:{}".format(_SERVER, _PORT))
+        clients = self._bp4.getClients()
+        if not clients:
+            print("MISSING WORKSPACE")
+            return
+        workspaceRoot = [cl.get("Root") for cl in clients if cl.get('Host', str(self._bp4.client))][0]
+        if workspaceRoot:
+            self.workspaceRoot = workspaceRoot
+        print(self.workspaceRoot)
+
+    def _getLatest(self, depotFile):
+        """Get the latest version of the file
+        """
+
 
 
 ## UTILITY FUNCTIONS ##

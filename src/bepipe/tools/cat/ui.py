@@ -5,6 +5,7 @@ from pprint import pprint
 from PySide2 import QtCore, QtGui, QtWidgets
 
 import bepipe.core.qt.style as style
+import bepipe.core.bep4 as bep4
 
 from .api import cat
 from .api import _settings
@@ -17,6 +18,11 @@ from .dialog import _createAssetDialog
 # TODO move to widgets module
 _SPACER = QtWidgets.QSpacerItem(0, 10)
 _RECENT_PROJECT_LIMIT = 5
+
+# TODO move to config/settings
+_SERVER = "ec2-34-219-230-44.us-west-2.compute.amazonaws.com"
+_PORT = "1666"
+_CLIENT = "bevans_mbp_1988"
 
 # TODO add a filter search bar
 
@@ -61,28 +67,34 @@ class CATWindow(QtWidgets.QMainWindow):
         fileMenu = menuBar.addMenu("&File")
         createMenu = menuBar.addMenu("&Create")
         perforceMenu = menuBar.addMenu('&Perforce')
-        # prefsMenu = menuBar.addMenu("&Preferences")
         helpMenu = menuBar.addMenu("&Help")
 
         # Menu actions #
 
         self.newProject = QtWidgets.QAction('New Project', self)
         fileMenu.addAction(self.newProject)
+
         self.openProject = QtWidgets.QAction('Open Project', self)
         fileMenu.addAction(self.openProject)
+
         self.recentProjectsMenu = QtWidgets.QMenu('Open Recent', self)
         fileMenu.addMenu(self.recentProjectsMenu)
         self._setRecentProjects()
 
+        self.preferences = QtWidgets.QAction('&Preferences')
+        fileMenu.addAction(self.preferences)
+
         self.createNewAsset = QtWidgets.QAction('Create New Asset', self)
         createMenu.addAction(self.createNewAsset)
 
-        self.perforceInfo = QtWidgets.QAction('View Connection', self)
-        perforceMenu.addAction(self.perforceInfo)
+        # TODO preferences window will handle the P4 settings
+        # self.perforceInfo = QtWidgets.QAction('View Connection', self)
+        # perforceMenu.addAction(self.perforceInfo)
 
         self.readDocs = QtWidgets.QAction('Read the Docs', self)
         helpMenu.addAction(self.readDocs)
-        self.about = QtWidgets.QAction('About', self)
+    
+        self.about = QtWidgets.QAction('&About', self)
         helpMenu.addAction(self.about)
 
         # Status Bar #
@@ -166,6 +178,8 @@ class CATWindow(QtWidgets.QMainWindow):
         self.newProject.triggered.connect(self._createNewProject)
         self.openProject.triggered.connect(self._openExistingProject)
         self.createNewAsset.triggered.connect(self._showCreateAssetWindow)
+        self.preferences.triggered.connect(self._showPreferencesDialog)
+        self.about.triggered.connect(self._showAboutDialog)
         # viewConnection
         # readDocs
         self.assetTree.customContextMenuRequested.connect(self._contextMenu)
@@ -391,12 +405,18 @@ class CATWindow(QtWidgets.QMainWindow):
             self.recentProjectsMenu.addAction(action)
             self.recentProjects.append(project)
 
+    def _showAboutDialog(self):
+        print("Showing about")
+
     def _showCreateAssetWindow(self):
         if not self.project:
             self._showStatusMessage('WARN', "Open a project first!")
             return
 
         self.createAssetWindow.show()
+
+    def _showPreferencesDialog(self):
+        print("Showing Preferences")
 
     def _createAsset(self):
         """Create an asset with info from the create asset menu
