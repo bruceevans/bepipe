@@ -20,6 +20,7 @@ _PORT = "1666"
 _CLIENT = "bevans_mbp_1988"
 
 # TODO build a list of standard DCC, store in a config
+# TODO manage/set client workspace
 
 
 class CAT(object):
@@ -27,6 +28,7 @@ class CAT(object):
     """
     def __init__(self):
         # Init perforce
+        print("INITIALIZING PERFORCE CONNECTION")
         self._setupBP4()
 
     #####################
@@ -60,16 +62,14 @@ class CAT(object):
         # TODO change extension to .cat?
 
         # BP4.addNewFiles([projectPath])
-        print("CREATING CHANGELIST")
         try:
-            changelist = bep4.createChangelist(description=_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
+            changelist = self._bp4.createChangelist(description=_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
         # BP4.submit(_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
         except ValueError as e:
             print("ERROR! \n{}".format(e))
             return
         print("ADDING PROJECT TO CHANGELIST")
-        bep4.addFileToChangelist(projectPath, changelist)
-
+        self._bp4.addFileToChangelist(projectPath, changelist)
 
     def openProject(self, projectPath):
         """Open an existing project
@@ -82,11 +82,11 @@ class CAT(object):
 
         """
 
-        projectDirectory = os.path.dirname(projectPath)
+        pojectDirectory = os.path.dirname(projectPath)
         projectData = _jsonutils.readJsonFile(projectPath)
         project = projectData[0]["PROJECT"]["PROJECT_NAME"]
 
-        return (projectDirectory, project)
+        return (pojectDirectory, project)
 
     def createConfig(self, projectDirectory, project):
         """Create a config json in the user's home
@@ -362,19 +362,19 @@ class CAT(object):
     ## PERFORCE INTERACTION ##
     ##########################
 
-    def _setupBP4(self):
+    def _setupBP4(self, client=None):
         """Establish a connection with the perforce server
         """
 
-        self._bp4 = bep4.BP4(port="{}:{}".format(_SERVER, _PORT))
+        self._bp4 = bep4.BP4(client=client, port="{}:{}".format(_SERVER, _PORT))
         clients = self._bp4.getClients()
         if not clients:
             print("MISSING WORKSPACE")
             return
+        print(clients)
         workspaceRoot = [cl.get("Root") for cl in clients if cl.get('Host', str(self._bp4.client))][0]
         if workspaceRoot:
             self.workspaceRoot = workspaceRoot
-        print(self.workspaceRoot)
 
     def _getLatest(self, depotFile):
         """Get the latest version of the file

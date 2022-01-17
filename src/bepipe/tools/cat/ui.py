@@ -13,6 +13,7 @@ from .api import _constants
 from .dialog import _assetTree
 from .dialog import _elementWidget
 from .dialog import _createAssetDialog
+from .dialog import _preferencesDialog
 
 
 # TODO move to widgets module
@@ -53,6 +54,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.selectedAsset = None
         self.selectedElement = None
         self.createAssetWindow = _createAssetDialog.CreateAssetDialog()
+        self.preferencesDialog = None
 
         self._setupUi()
         self._connectWidgets()
@@ -66,7 +68,6 @@ class CATWindow(QtWidgets.QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&File")
         createMenu = menuBar.addMenu("&Create")
-        perforceMenu = menuBar.addMenu('&Perforce')
         helpMenu = menuBar.addMenu("&Help")
 
         # Menu actions #
@@ -81,8 +82,8 @@ class CATWindow(QtWidgets.QMainWindow):
         fileMenu.addMenu(self.recentProjectsMenu)
         self._setRecentProjects()
 
-        self.preferences = QtWidgets.QAction('&Preferences')
-        fileMenu.addAction(self.preferences)
+        self.openPreferences = QtWidgets.QAction('&Preferences')
+        fileMenu.addAction(self.openPreferences)
 
         self.createNewAsset = QtWidgets.QAction('Create New Asset', self)
         createMenu.addAction(self.createNewAsset)
@@ -178,7 +179,7 @@ class CATWindow(QtWidgets.QMainWindow):
         self.newProject.triggered.connect(self._createNewProject)
         self.openProject.triggered.connect(self._openExistingProject)
         self.createNewAsset.triggered.connect(self._showCreateAssetWindow)
-        self.preferences.triggered.connect(self._showPreferencesDialog)
+        self.openPreferences.triggered.connect(self._showPreferencesDialog)
         self.about.triggered.connect(self._showAboutDialog)
         # viewConnection
         # readDocs
@@ -405,6 +406,14 @@ class CATWindow(QtWidgets.QMainWindow):
             self.recentProjectsMenu.addAction(action)
             self.recentProjects.append(project)
 
+    def _applyPreferences(self):
+        """Apply new preferences from dialog"""
+        print("SAVING PREFS FROM PREFS DIALOG")
+        # TODO apply P4 stuff, make public var
+
+        client = self.settings.value("perforceWorkspace")
+        self._CAT_API._setupBP4(client=client)
+
     def _showAboutDialog(self):
         print("Showing about")
 
@@ -416,7 +425,10 @@ class CATWindow(QtWidgets.QMainWindow):
         self.createAssetWindow.show()
 
     def _showPreferencesDialog(self):
-        print("Showing Preferences")
+        if not self.preferencesDialog:
+            self.preferencesDialog = _preferencesDialog.PreferencesDialog(self.settings)
+        self.preferencesDialog.savePreferences.connect(self._applyPreferences)
+        self.preferencesDialog.show()
 
     def _createAsset(self):
         """Create an asset with info from the create asset menu

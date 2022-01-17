@@ -1,5 +1,5 @@
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2 import QtGui, QtWidgets
 
 from ..api import _constants
 

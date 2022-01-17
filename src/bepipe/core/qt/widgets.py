@@ -39,19 +39,28 @@ class CollapsableGroupBox(QtWidgets.QGroupBox):
     """ Group box widget with collapseable toggle
     """
 
-    def __init__(self, title=None, func=None):
-        super(CollapsableGroupBox, self).__init__()
+    def __init__(self, parent=None, setChecked=False, title=None, func=None):
+        """Custom group box widget that can collapse
+        
+        Args:
+            setChecked (bool): Initialize open or not
+            title: Groupbox title
+            func: Option function to run on collapse
+        """
+        
+        super(CollapsableGroupBox, self).__init__(parent=parent)
 
         self.setTitle(title)
         self.func=func
 
         self.setStyleSheet(_COLLAPSE_STYLE)
         self.setCheckable(True)
-        self.setChecked(False)
+        self.setChecked(setChecked)
         self.toggled.connect(self.toggleGroup)
 
     def toggleGroup(self):
         if self.isChecked():
+            # TODO clean this up?
             self.setFixedHeight(self.sizeHint().height())
         else:
             self.setFixedHeight(25)

@@ -76,7 +76,6 @@ class BP4(object):
                 return [cl for cl in self._p4.run_clients() if cl.get("Owner") == user]
             return list(self._p4.run_clients())
 
-    @BP4Connect
     def hasRevisions(self, depotPath):
         """Checks if the given file has revisions aka out of date
         
@@ -87,16 +86,16 @@ class BP4(object):
             (bool)
 
         """
-        revisions = None
-        try:
-            # TODO double check this
-            revisions = self._p4.run_files(depotPath)
-        except P4Exception as e:
-            print(e)
-            return False
-        return True if revisions else False
+        with self._p4.connect():
+            revisions = None
+            try:
+                # TODO double check this
+                revisions = self._p4.run_files(depotPath)
+            except P4Exception as e:
+                print(e)
+                return False
+            return True if revisions else False
 
-    @BP4Connect
     def getRevisions(self, depotPath):
         """Get a list of revisions of the given depot file
         
@@ -107,18 +106,18 @@ class BP4(object):
             ([P4.Revision]): Revisions, newest first [0]
         """
 
-        try:
-            result = self._p4.run_filelog(depotPath)
-        except P4Exception:
-            return []
+        with self._p4.connect():
+            try:
+                result = self._p4.run_filelog(depotPath)
+            except P4Exception:
+                return []
 
-        revisions = []
-        for f in result:
-            for revision in f.revisions:
-                revisions.append(revision)
-        return revisions
+            revisions = []
+            for f in result:
+                for revision in f.revisions:
+                    revisions.append(revision)
+            return revisions
 
-    @BP4Connect
     def createChangelist(self, description=None):
         """Create a new changelist with an option description
         
@@ -129,15 +128,13 @@ class BP4(object):
             (int): Changelist ID
         """
 
-        # TODO verify this
+        with self._p4.connect():
+            changelist = self._p4.save_change({
+                "Change": "new",
+                "Description": str(description) or ""
+            })
+            return int(changelist[0].split()[1])
 
-        changelist = self._p4.save_change({
-            "Change": "new",
-            "Description": str(description) or ""
-        })
-        return int(changelist[0].split()[1])
-
-    @BP4Connect
     def addFileToChangelist(self, localPath, changelist=None):
         """Add a local file to the specified changelist
         
@@ -149,18 +146,17 @@ class BP4(object):
         Returns:
             (dict): Dictionary with 
         """
+        with self._p4.connect():
+            if not changelist:
+                changelist = "default"
+            try:
+                # TODO may need to make the path a unix path
+                result = self._p4.run_add("-c", changelist, os.path.normpath(localPath))
+            except P4Exception as e:
+                raise ValueError(e.value)
+            return result[0]
 
-        if not changelist:
-            changelist = "default"
-        try:
-            # TODO may need to make the path a unix path
-            result = self._p4.run_add("-c", changelist, os.path.normpath(localPath))
-        except P4Exception as e:
-            raise ValueError(e.value)
-        return result[0]
-
-    # TODO rename? or implement a 'checkout' in CAT API/elsewhere?
-    @BP4Connect
+    # TODO rename function? or implement a 'checkout' in CAT API/elsewhere?
     def editFile(self, depotPath, changelist=None):
         """Exclusive checkout of a depot file
         
@@ -175,17 +171,16 @@ class BP4(object):
             ValueError: P4Exception on invalid changelist or path
 
         """
+        with self._p4.connect():
+            if not changelist:
+                changelist = "default"
+            try:
+                # TODO unix path?
+                result = self._p4.run_edit("-c", changelist, os.path.normpath(depotPath))
+            except P4Exception as e:
+                raise ValueError(e.value)
+            return result[0]
 
-        if not changelist:
-            changelist = "default"
-        try:
-            # TODO unix path?
-            result = self._p4.run_edit("-c", changelist, os.path.normpath(depotPath))
-        except P4Exception as e:
-            raise ValueError(e.value)
-        return result[0]
-
-    @BP4Connect
     def isOpened(self, localPath):
         """Determines if a local file is opened in a changelist alread
         aka: another user is working on it.
@@ -197,7 +192,6 @@ class BP4(object):
             (bool)
         """
 
-    @BP4Connect
     def sync(self, depotPath):
         """Sync an existing server file to the local root
         
@@ -210,14 +204,15 @@ class BP4(object):
         Raises:
             ValueError: If the file is not under the clien'ts root
         """
+        with self._p4.connect():
+            try:
+                self._p4.run_sync(path.toLinuxPath(os.path.normpath(depotPath)))
+            except P4Exception as e:
+                if "files(s) up-to-date" in e.value:
+                    return True
+                elif "not under client's root" in e.value:
+                    raise ValueError(e.value)
+                return False
+            return True
 
-        try:
-            self._p4.run_sync(path.toLinuxPath(os.path.normpath(depotPath)))
-        except P4Exception as e:
-            if "files(s) up-to-date" in e.value:
-                return True
-            elif "not under client's root" in e.value:
-                raise ValueError(e.value)
-            return False
-        return True
     # TODO set client function when needed
