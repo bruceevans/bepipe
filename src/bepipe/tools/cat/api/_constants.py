@@ -28,6 +28,22 @@ ASSET_ICONS = {
     "vfx": os.path.join(FILE_DIRECTORY, "resources/icons/vfx.png")
 }
 
+# TODO make this a preference/config
+DCC_PATHS = {
+    "animation": "/Applications/Blender.app",
+    "lighting": "/Applications/Blender.app",
+    "maps":[
+        "/Applications/Substance Painter.app",
+        "/Applications/Substance Designer.app",
+        "/Applications/Adobe Photoshop 2022/Adobe Photoshop 2022.app"
+    ],
+    "mesh": "/Applications/Blender.app",
+    "reference": "/Applications/PureRef.app",
+    "render": "/Applications/Blender.app",
+    "rig": "/Applications/Blender.app",
+    "sculpt": "/Applications/ZBrush 2021/ZBrush.app"
+}
+
 ELEMENTS = [
     "animation",    # Blender
     "bake",         # Marmo

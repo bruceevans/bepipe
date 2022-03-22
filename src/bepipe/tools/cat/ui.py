@@ -26,6 +26,7 @@ _PORT = "1666"
 _CLIENT = "bevans_mbp_1988"
 
 # TODO add a filter search bar
+# TODO make some of the vars into properties?
 
 class CATWindow(QtWidgets.QMainWindow):
     """ Main gui for CAT
@@ -34,7 +35,6 @@ class CATWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(CATWindow, self).__init__()
 
-        self._CAT_API = cat.CAT()
         self.icon = QtGui.QIcon(_constants.WINDOW_ICON)
 
         # Name of the project
@@ -58,6 +58,11 @@ class CATWindow(QtWidgets.QMainWindow):
 
         self._setupUi()
         self._connectWidgets()
+
+        self._CAT_API = cat.CAT()
+
+        client = self.settings.value("perforceWorkspace") or None
+        self._CAT_API.setupBP4(client=client)
 
     def _setupUi(self):
         """ UI initialization
@@ -231,17 +236,21 @@ class CATWindow(QtWidgets.QMainWindow):
             can be an existing directory or a new one via fild dialog
         """
 
+        # TODO choose a location for the project folder
         qfd = QtWidgets.QFileDialog()
         self.projectPath = QtWidgets.QFileDialog.getSaveFileName(
             qfd,
-            ("Create a .JSON project file..."),
-            filter="JSON Files (*.json *.JSON)")[0]
+            ("Choose a location for the project directory...")
+        )[0]
 
         if not self.projectPath:
+            # TODO Error
             return
         
         self.projectDirectory = os.path.dirname(self.projectPath)
-        self.projectFile = os.path.split(self.projectPath)[1]
+        self.projectFile = "{}{}".format(os.path.split(self.projectPath)[1], ".json")
+        print("FILENAME: ")
+        print(self.projectFile)
         self.project = os.path.splitext(self.projectFile)[0]
         self._CAT_API.createProject(self.projectPath, self.projectFile)
         self.config = self._CAT_API.createConfig(self.projectDirectory, self.projectFile)
@@ -249,6 +258,13 @@ class CATWindow(QtWidgets.QMainWindow):
 
         # update form
         self.projectLineEdit.setText(self.project)
+
+    def _deleteAsset(self):
+        """Delete the selected asset"""
+        print("DELETING: ")
+        print(self.assetTree.selectedAsset)
+
+        
 
     def _onAssetChanged(self, index):
         """ Logic to run when the user clicks a new asset in the main asset tree view """
@@ -412,7 +428,7 @@ class CATWindow(QtWidgets.QMainWindow):
         # TODO apply P4 stuff, make public var
 
         client = self.settings.value("perforceWorkspace")
-        self._CAT_API._setupBP4(client=client)
+        self._CAT_API.setupBP4(client=client)
 
     def _showAboutDialog(self):
         print("Showing about")
@@ -443,7 +459,12 @@ class CATWindow(QtWidgets.QMainWindow):
                 elements.append(element.text())
 
         path = os.path.join(self.projectDirectory, assetType, assetName)
-        depotPath = os.path.join(_settings.PERFORCE_DEPOT_PATH, assetName)
+        depotPath = os.path.join(
+            _settings.PERFORCE_DEPOT_PATH,
+            self.project,
+            assetType,
+            assetName
+        )
 
         newAsset = self._CAT_API.createAsset(
             assetName,
@@ -456,7 +477,7 @@ class CATWindow(QtWidgets.QMainWindow):
         )
 
         self.createAssetWindow.reset()
-        self.createAssetWindow.hide()
+        self.createAssetWindow.close()
         self._refresh(newAsset=newAsset)
 
     def _showStatusMessage(self, level, msg):

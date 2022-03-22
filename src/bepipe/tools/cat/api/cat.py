@@ -1,7 +1,7 @@
 
 import os
 import shutil
-import pprint as pprint
+from pprint import pprint
 
 from . import _constants
 from . import _jsonutils
@@ -20,8 +20,6 @@ _PORT = "1666"
 _CLIENT = "bevans_mbp_1988"
 
 # TODO build a list of standard DCC, store in a config
-# TODO manage/set client workspace
-
 
 class CAT(object):
     """API for creating assets in Cat
@@ -29,13 +27,13 @@ class CAT(object):
     def __init__(self):
         # Init perforce
         print("INITIALIZING PERFORCE CONNECTION")
-        self._setupBP4()
+        self.setupBP4()
 
     #####################
     ## PROJECT METHODS ##
     #####################
 
-    def createProject(self, projectPath, projectName):
+    def createProject(self, projectPath, projectFileName):
         """ Create a project json file
 
             args:
@@ -48,7 +46,7 @@ class CAT(object):
 
         projectDict = [
             { "PROJECT": {
-                "PROJECT_NAME": projectName,
+                "PROJECT_NAME": projectFileName,
                 "DESCRIPTION": "TODO"
             } 
             },
@@ -57,19 +55,26 @@ class CAT(object):
             }
         ]
 
-        _jsonutils.writeJson(projectPath, projectDict)
+        # Check for an existing folder first, if it's there use it
+        # otherwise create a new one
+        if not os.path.exists(projectPath):
+            os.mkdir(projectPath)
+
+        # Project path will be the name of the parent directoyr
+        projectFilePath = os.path.join(projectPath, projectFileName)
+        _jsonutils.writeJson(projectFilePath, projectDict)
 
         # TODO change extension to .cat?
 
-        # BP4.addNewFiles([projectPath])
         try:
-            changelist = self._bp4.createChangelist(description=_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
-        # BP4.submit(_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath))
+            changelist = self._bp4.createChangelist(
+                description=_PROJECT_CHANGELIST_DESCRIPTION.format(projectPath)
+            )
         except ValueError as e:
             print("ERROR! \n{}".format(e))
             return
-        print("ADDING PROJECT TO CHANGELIST")
-        self._bp4.addFileToChangelist(projectPath, changelist)
+        self._bp4.addFileToChangelist(projectFilePath, changelist)
+        self._bp4.submitChangelist(changelist)
 
     def openProject(self, projectPath):
         """Open an existing project
@@ -151,13 +156,16 @@ class CAT(object):
             elements ([str]): Elements used by this asset (mesh, maps, rig, etc.)
             path (str): Path to the asset's base folder
             depotPath (str): Path to asset in perforce depot
-            projectPath (str): Path to the project's parent directory
-
+            projectPath (str): Path to the project file
+            project (str): 
         """
+
+        print("PROJECT: ")
+        print(project)
 
         projectDirectory = os.path.dirname(projectPath)
 
-        asset = self.createAssetDict(
+        asset = self._createAssetDict(
             assetName,
             assetType,
             assetPath,
@@ -166,9 +174,27 @@ class CAT(object):
             depotPath
             )
 
-        self.createAssetDirectories(projectPath, asset)
-        self.writeAssetToFile(projectPath, asset)
-        self.createTemplateProjects(projectDirectory, asset)
+        self._createAssetDirectories(projectPath, asset)
+
+        try:
+            changelist = self._bp4.createChangelist(
+                description=_ASSET_CHANGELIST_DESCRIPTION.format(assetName)
+            )
+        except ValueError as e:
+            print("ERROR! \n{}".format(e))
+            return
+
+        self._bp4.editFile(projectPath, changelist)
+        self._writeAssetToFile(projectPath, asset)
+        
+        self._createTemplateProjects(projectDirectory, asset)
+
+        assetFiles = getListOfFiles(assetPath)
+
+        for assetFile in assetFiles:
+            self._bp4.addFileToChangelist(assetFile, changelist=changelist)
+
+        self._bp4.submitChangelist(changelist)
         return asset
 
     def deleteAsset(self, projectFile, asset):
@@ -218,6 +244,9 @@ class CAT(object):
 
         """
 
+        # TODO need a true project creaion (folder -> json file)
+        # for the next line to work, the project folder needs to match the json file
+        # maybe think of another option?
         relPath = assetPath.split(project)[1]
 
         # TODO make sure it's a unix style path
@@ -242,7 +271,7 @@ class CAT(object):
             returns:
                 bool
         """
-
+        
         projectDirectory = os.path.split(projectPath)[0]
         # Check for the asset type folder, if it doesn't exist, make it
         assetTypeDir = os.path.join(projectDirectory, asset.get("TYPE"))
@@ -251,8 +280,12 @@ class CAT(object):
             os.mkdir(assetTypeDir)
 
         fullAssetPath = os.path.join(projectDirectory, asset["PATH"])
-        os.mkdir(fullAssetPath)
 
+        if os.path.exists(fullAssetPath):
+            # remove for cleanup and redo
+            shutil.rmtree(fullAssetPath)
+
+        os.mkdir(fullAssetPath)
         templateDirs = self._getTemplateDirectories()
 
         for element in asset.get("ELEMENTS"):
@@ -311,11 +344,6 @@ class CAT(object):
                     if not os.path.isdir(os.path.join(diskPath, element, "gameready")):
                         os.mkdir(gameReadyDir)
 
-            # TODO perforce check in
-            # Add to perforce
-            # BP4.addNewFiles([files])
-            # BP4.submit(_ASSET_CHANGELIST_DESCRIPTION.format(asset.get("NAME")))
-
     def _getTemplateDirectories(self):
         """ Get the folder structure from the template directory
             json file in the resources folder
@@ -362,7 +390,7 @@ class CAT(object):
     ## PERFORCE INTERACTION ##
     ##########################
 
-    def _setupBP4(self, client=None):
+    def setupBP4(self, client=None):
         """Establish a connection with the perforce server
         """
 
@@ -371,7 +399,6 @@ class CAT(object):
         if not clients:
             print("MISSING WORKSPACE")
             return
-        print(clients)
         workspaceRoot = [cl.get("Root") for cl in clients if cl.get('Host', str(self._bp4.client))][0]
         if workspaceRoot:
             self.workspaceRoot = workspaceRoot
@@ -380,17 +407,16 @@ class CAT(object):
         """Get the latest version of the file
         """
 
-
-
 ## UTILITY FUNCTIONS ##
 # TODO move into cat class
 
 # move to path module
 def getListOfFiles(dirName):
-    files = []
-    for file in os.walk(dirName):
-        files.append(file[0])
-    return files
+    fileList = []
+    for r, _, f in os.walk(dirName):
+        for fileName in f:
+            fileList.append(os.path.join(r, fileName))
+    return fileList
 
 def modifyAssetElements():
     """

@@ -129,11 +129,21 @@ class BP4(object):
         """
 
         with self._p4.connect():
+            description = {"Description": description, "Change": "new"}
+            self._p4.input = description
+            changelist = self._p4.run( "change", "-i" )
+            """
             changelist = self._p4.save_change({
                 "Change": "new",
                 "Description": str(description) or ""
             })
-            return int(changelist[0].split()[1])
+            """
+            if not changelist:
+                raise P4Exception("Could not create changelist")
+            changelistID = changelist[0].split()[1]
+            return self._p4.fetch_changelist(int(changelistID))
+
+            # return int(changelist[0].split()[1])
 
     def addFileToChangelist(self, localPath, changelist=None):
         """Add a local file to the specified changelist
@@ -150,18 +160,16 @@ class BP4(object):
             if not changelist:
                 changelist = "default"
             try:
-                # TODO may need to make the path a unix path
-                result = self._p4.run_add("-c", changelist, os.path.normpath(localPath))
+                result = self._p4.run_add("-c", changelist.get("Change"), localPath)
             except P4Exception as e:
                 raise ValueError(e.value)
             return result[0]
 
-    # TODO rename function? or implement a 'checkout' in CAT API/elsewhere?
-    def editFile(self, depotPath, changelist=None):
+    def editFile(self, localPath, changelist=None):
         """Exclusive checkout of a depot file
         
         Args:
-            depotPath (str): Path to depot file
+            localPath (str): Path to a file under the root
             changelist (int): Changelist ID
 
         Returns:
@@ -171,12 +179,12 @@ class BP4(object):
             ValueError: P4Exception on invalid changelist or path
 
         """
+
         with self._p4.connect():
             if not changelist:
                 changelist = "default"
             try:
-                # TODO unix path?
-                result = self._p4.run_edit("-c", changelist, os.path.normpath(depotPath))
+                result = self._p4.run_edit("-c", changelist.get("Change"), localPath)
             except P4Exception as e:
                 raise ValueError(e.value)
             return result[0]
@@ -191,6 +199,20 @@ class BP4(object):
         Returns:
             (bool)
         """
+
+    def submitChangelist(self, changeList):
+        """Submit the changelist to perforce
+        
+        Args:
+            changeList (int): Changelist to submit
+        """
+
+        with self._p4.connect():
+            try:
+                self._p4.run_submit("-c", changeList.get("Change"))
+            except P4Exception as e:
+                print(e)
+                return
 
     def sync(self, depotPath):
         """Sync an existing server file to the local root

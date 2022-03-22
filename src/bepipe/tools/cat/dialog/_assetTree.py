@@ -1,8 +1,8 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from .import _simpleTreeView
 from ..api import _constants
-from ..dialog import _simpleTreeView
 
 class AssetTree(_simpleTreeView.SimpleTree):
     """ Tree view for the project's assets
@@ -46,3 +46,7 @@ class AssetTree(_simpleTreeView.SimpleTree):
 
     def getTableItem(self, row, column):
         return self.model.item(row, column)
+
+    # TODO remove row?
+    def removeAssetFromTree(self, row):
+        """Remove the row from the asset tree"""
