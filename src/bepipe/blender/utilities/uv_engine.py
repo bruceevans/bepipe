@@ -31,6 +31,7 @@ def storeSelection():
 def restoreSelection():
     """ Restore uv selection, mode, and pivot
     """
+
 ## Multiple items selected
 
 def verts2uvs(bmesh, uvLayers):
